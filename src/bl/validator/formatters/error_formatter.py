@@ -14,14 +14,18 @@ class ErrorFormatter:
         self._extractor = ConstraintExtractor()
         self._generator = FixSuggestionGenerator()
 
-    def format(self, idx: int, errors: List[JsonSchemaValidationError]) -> List[ValidationError]:
+    def format(
+        self, idx: int, errors: List[JsonSchemaValidationError]
+    ) -> List[ValidationError]:
         """Format a list of validation errors for a single object."""
         formatted_errors = []
         for error in errors:
             formatted_errors.append(self._format_single_error(idx, error))
         return formatted_errors
 
-    def _format_single_error(self, idx: int, error: JsonSchemaValidationError) -> ValidationError:
+    def _format_single_error(
+        self, idx: int, error: JsonSchemaValidationError
+    ) -> ValidationError:
         """Format a single error with detailed fix information."""
         path = self._extractor.get_path(error)
         schema_path = self._extractor.get_schema_path(error)

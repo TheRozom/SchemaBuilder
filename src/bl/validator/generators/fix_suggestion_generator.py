@@ -83,7 +83,9 @@ class FixSuggestionGenerator:
         else:
             context["actual_length"] = len(str(value)) if value else 0
 
-    def _add_required_context(self, context: Dict[str, Any], error: JsonSchemaValidationError) -> None:
+    def _add_required_context(
+        self, context: Dict[str, Any], error: JsonSchemaValidationError
+    ) -> None:
         """Add context for required validator errors."""
         missing_prop = self._message_loader.get_default("default_property")
         if "'" in error.message:

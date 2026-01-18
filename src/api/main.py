@@ -24,7 +24,7 @@ logger = get_logger(__name__)
 app = FastAPI(
     title="Schema Builder API",
     description="Secure JSON Schema generator",
-    version="0.1.0"
+    version="0.1.0",
 )
 
 app.add_middleware(
@@ -37,7 +37,9 @@ app.add_middleware(
 
 
 @app.exception_handler(SchemaBuilderError)
-async def schema_builder_error_handler(_request: Request, exc: SchemaBuilderError) -> JSONResponse:
+async def schema_builder_error_handler(
+    _request: Request, exc: SchemaBuilderError
+) -> JSONResponse:
     logger.error("SchemaBuilderError: %s", exc.message)
     return JSONResponse(
         status_code=400,
@@ -46,7 +48,9 @@ async def schema_builder_error_handler(_request: Request, exc: SchemaBuilderErro
 
 
 @app.exception_handler(ValidationException)
-async def validation_exception_handler(_request: Request, exc: ValidationException) -> JSONResponse:
+async def validation_exception_handler(
+    _request: Request, exc: ValidationException
+) -> JSONResponse:
     logger.error("ValidationException: %s", exc.message)
     return JSONResponse(
         status_code=422,
@@ -69,9 +73,11 @@ async def health_check():
 
 @app.post("/schemas/build", response_model=SchemaDefinition)
 async def build_schema(
-    data: list[Any] = Body(..., description="List of JSON objects to build schema from"),
+    data: list[Any] = Body(
+        ..., description="List of JSON objects to build schema from"
+    ),
     schema_service: ISchemaService = Depends(get_schema_service),
-    ai_service: IAIService = Depends(get_ai_service)
+    ai_service: IAIService = Depends(get_ai_service),
 ):
     logger.info("POST /schemas/build - %d items", len(data))
 
@@ -104,7 +110,9 @@ async def build_schema(
     schema_def.score = score_res
 
     validator = SchemaValidator()
-    validation_res = validator.validate_data_against_schema(schema_def.schema_content, data)
+    validation_res = validator.validate_data_against_schema(
+        schema_def.schema_content, data
+    )
     schema_def.validation = ValidationResult(**validation_res.to_dict())
 
     logger.info("Schema built successfully with score %d", score_res.overall)
@@ -115,7 +123,7 @@ async def build_schema(
 async def infer_schema_from_data(
     data: Any = Body(..., description="Raw JSON data to infer schema from"),
     schema_service: ISchemaService = Depends(get_schema_service),
-    ai_service: IAIService = Depends(get_ai_service)
+    ai_service: IAIService = Depends(get_ai_service),
 ):
     logger.info("POST /schemas/infer")
 
@@ -131,7 +139,9 @@ async def infer_schema_from_data(
 
     validator = SchemaValidator()
     data_list = data if isinstance(data, list) else [data]
-    validation_res = validator.validate_data_against_schema(schema_def.schema_content, data_list)
+    validation_res = validator.validate_data_against_schema(
+        schema_def.schema_content, data_list
+    )
     schema_def.validation = ValidationResult(**validation_res.to_dict())
 
     logger.info("Schema inferred successfully with score %d", score_res.overall)
@@ -141,7 +151,7 @@ async def infer_schema_from_data(
 @app.post("/schemas/score")
 async def score_schema(
     schema: dict[str, Any] = Body(..., description="JSON Schema to score"),
-    ai_service: IAIService = Depends(get_ai_service)
+    ai_service: IAIService = Depends(get_ai_service),
 ):
     logger.info("POST /schemas/score")
 
@@ -163,9 +173,13 @@ async def score_schema(
 
 @app.post("/schemas/analyze", response_model=ConflictAnalysis)
 async def analyze_schema_conflicts(
-    data: list[Any] = Body(..., description="List of JSON objects to analyze for conflicts")
+    data: list[Any] = Body(
+        ..., description="List of JSON objects to analyze for conflicts"
+    )
 ):
-    logger.info("POST /schemas/analyze - %d items", len(data) if isinstance(data, list) else 0)
+    logger.info(
+        "POST /schemas/analyze - %d items", len(data) if isinstance(data, list) else 0
+    )
 
     if not isinstance(data, list):
         raise InputValidationError(
@@ -190,7 +204,7 @@ async def analyze_schema_conflicts(
 @app.post("/schemas/validate")
 async def validate_data(
     schema: dict[str, Any] = Body(..., description="JSON Schema to validate against"),
-    data: list[Any] = Body(..., description="List of JSON objects to validate")
+    data: list[Any] = Body(..., description="List of JSON objects to validate"),
 ):
     logger.info("POST /schemas/validate - %d items", len(data) if data else 0)
 
@@ -209,16 +223,20 @@ async def validate_data(
     validator = SchemaValidator()
     validation_result = validator.validate_data_against_schema(schema, data)
 
-    logger.info("Validation complete: valid=%s, errors=%d",
-               validation_result.valid, validation_result.total_errors)
+    logger.info(
+        "Validation complete: valid=%s, errors=%d",
+        validation_result.valid,
+        validation_result.total_errors,
+    )
 
     return {
         "valid": validation_result.valid,
         "total_errors": validation_result.total_errors,
-        "errors": [error.model_dump() for error in validation_result.errors]
+        "errors": [error.model_dump() for error in validation_result.errors],
     }
 
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)

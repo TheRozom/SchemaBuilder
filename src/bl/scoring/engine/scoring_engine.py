@@ -31,13 +31,13 @@ class ScoringEngine:
             "strictness": StrictnessRule(),
             "completeness": CompletenessRule(),
             "ambiguity": AmbiguityRule(),
-            "security": self.security_rule
+            "security": self.security_rule,
         }
         self.weights = {
             "strictness": ScoringWeights.STRICTNESS,
             "completeness": ScoringWeights.COMPLETENESS,
             "ambiguity": ScoringWeights.AMBIGUITY,
-            "security": ScoringWeights.SECURITY
+            "security": ScoringWeights.SECURITY,
         }
         logger.debug("ScoringEngine initialized with %d rules", len(self.rules))
 
@@ -71,12 +71,11 @@ class ScoringEngine:
                 logger.warning("Security rule failed, setting total score to 0")
                 total = 0.0
 
-            result = ScoreResult(
-                total_score=round(total * 100, 2),
-                breakdown=scores
-            )
+            result = ScoreResult(total_score=round(total * 100, 2), breakdown=scores)
 
-            logger.info("Schema scored: total=%.2f, breakdown=%s", result.total_score, scores)
+            logger.info(
+                "Schema scored: total=%.2f, breakdown=%s", result.total_score, scores
+            )
             return result
 
         except Exception as e:

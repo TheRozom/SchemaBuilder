@@ -47,7 +47,9 @@ class SchemaAnalyzer:
                 ),
             )
 
-        non_dict_indices = [i for i, item in enumerate(data_list) if not isinstance(item, dict)]
+        non_dict_indices = [
+            i for i, item in enumerate(data_list) if not isinstance(item, dict)
+        ]
         if non_dict_indices:
             logger.warning("Non-dict items found at indices: %s", non_dict_indices[:5])
             raise InputValidationError(
@@ -64,7 +66,7 @@ class SchemaAnalyzer:
                     JsonStructure(
                         index=idx,
                         tree=tree,
-                        key_count=self.tree_builder.count_nodes(tree)
+                        key_count=self.tree_builder.count_nodes(tree),
                     )
                 )
             logger.debug("Built %d tree structures", len(self.json_structures))
@@ -72,7 +74,9 @@ class SchemaAnalyzer:
             groups = self.grouper.group_by_containment(self.json_structures)
             logger.debug("Grouped into %d distinct structure groups", len(groups))
 
-            similarity_matrix = self.similarity_calculator.calculate(self.json_structures)
+            similarity_matrix = self.similarity_calculator.calculate(
+                self.json_structures
+            )
 
             structure_groups = [
                 StructureGroup(
@@ -85,10 +89,15 @@ class SchemaAnalyzer:
                 for idx, group in enumerate(groups)
             ]
 
-            summary = self.summary_generator.generate(len(data_list), groups, similarity_matrix)
+            summary = self.summary_generator.generate(
+                len(data_list), groups, similarity_matrix
+            )
 
-            logger.info("Analysis complete: %d unique structures, recommendation: %s",
-                       len(groups), summary.recommendation[:50])
+            logger.info(
+                "Analysis complete: %d unique structures, recommendation: %s",
+                len(groups),
+                summary.recommendation[:50],
+            )
 
             return AnalysisResult(
                 objects_analyzed=len(data_list),

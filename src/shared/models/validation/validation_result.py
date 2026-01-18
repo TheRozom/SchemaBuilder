@@ -5,6 +5,7 @@ from .validation_error import ValidationError
 
 class ValidationResult(BaseModel):
     """Result of validating data against a schema"""
+
     valid: bool
     total_errors: int = Field(default=0)
     errors: List[ValidationError] = Field(default_factory=list)

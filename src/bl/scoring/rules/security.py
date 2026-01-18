@@ -36,14 +36,18 @@ class SecurityRule(IRule):
             node = SchemaNode(**node_dict)
 
             if node.type == SchemaType.STRING:
-                if node.maxLength and node.maxLength > max_string_len and not node.pattern:
+                if (
+                    node.maxLength
+                    and node.maxLength > max_string_len
+                    and not node.pattern
+                ):
                     self.score_zero = True
                     self._issue_found = f"String maxLength ({node.maxLength}) exceeds {max_string_len} without pattern"
                     logger.warning("Security issue: %s", self._issue_found)
                     return False
 
             if node.type == SchemaType.INTEGER:
-                if node.maximum and node.maximum > 10 ** max_int_digits:
+                if node.maximum and node.maximum > 10**max_int_digits:
                     self.score_zero = True
                     self._issue_found = f"Integer maximum exceeds 10^{max_int_digits}"
                     logger.warning("Security issue: %s", self._issue_found)

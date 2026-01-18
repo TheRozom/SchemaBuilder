@@ -27,8 +27,11 @@ class OpenAIService(IAIService):
 
     async def generate_regex(self, samples: list[str]) -> Optional[str]:
         if not self.client or not samples:
-            logger.debug("Skipping regex generation: client=%s, samples=%d",
-                        self.client is not None, len(samples) if samples else 0)
+            logger.debug(
+                "Skipping regex generation: client=%s, samples=%d",
+                self.client is not None,
+                len(samples) if samples else 0,
+            )
             return None
 
         logger.debug("Generating regex for %d samples", len(samples))
@@ -54,7 +57,9 @@ class OpenAIService(IAIService):
         truncate_len = settings.AI_SCHEMA_TRUNCATE_LENGTH
         if len(schema_str) > truncate_len:
             schema_str = schema_str[:truncate_len] + "... (truncated)"
-            logger.debug("Schema truncated for evaluation (original > %d chars)", truncate_len)
+            logger.debug(
+                "Schema truncated for evaluation (original > %d chars)", truncate_len
+            )
 
         prompt = (
             f"Evaluate the quality and security of the following JSON Schema.\n"
@@ -66,7 +71,7 @@ class OpenAIService(IAIService):
         try:
             res = await self._call_gpt(prompt)
             if res:
-                match = re.search(r'\d+', res)
+                match = re.search(r"\d+", res)
                 if match:
                     score = int(match.group())
                     logger.debug("AI schema evaluation score: %d", score)
@@ -83,7 +88,7 @@ class OpenAIService(IAIService):
                 model=settings.AI_MODEL,
                 messages=[
                     {"role": "system", "content": "You are a schema helper."},
-                    {"role": "user", "content": prompt}
+                    {"role": "user", "content": prompt},
                 ],
                 max_tokens=settings.AI_MAX_TOKENS,
                 temperature=settings.AI_TEMPERATURE,

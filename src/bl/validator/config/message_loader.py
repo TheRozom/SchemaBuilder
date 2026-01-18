@@ -22,7 +22,9 @@ class ErrorMessageLoader:
 
     def _load_messages(self) -> None:
         self._messages = load_yaml_config("error_messages.yaml")
-        logger.info("Loaded %d message templates", len(self._messages.get("messages", {})))
+        logger.info(
+            "Loaded %d message templates", len(self._messages.get("messages", {}))
+        )
 
     def get_fix_template(self, validator: str) -> Optional[str]:
         messages = self._messages.get("messages", {})

@@ -15,7 +15,11 @@ class SchemaInferrer:
         self.unknown_samples: Dict[str, List[str]] = {}
 
     def infer(self, data: Any, path: str = "") -> SchemaNode:
-        logger.debug("Inferring schema for path '%s', type: %s", path, TypeChecker.get_type_name(data))
+        logger.debug(
+            "Inferring schema for path '%s', type: %s",
+            path,
+            TypeChecker.get_type_name(data),
+        )
 
         if TypeChecker.is_none(data):
             return SchemaNode(type=SchemaType.NULL)
@@ -24,11 +28,7 @@ class SchemaInferrer:
             return SchemaNode(type=SchemaType.BOOLEAN)
 
         if TypeChecker.is_int(data):
-            return SchemaNode(
-                type=SchemaType.INTEGER,
-                minimum=0,
-                maximum=data
-            )
+            return SchemaNode(type=SchemaType.INTEGER, minimum=0, maximum=data)
 
         if TypeChecker.is_float(data):
             return SchemaNode(type=SchemaType.NUMBER, minimum=0)
@@ -46,11 +46,7 @@ class SchemaInferrer:
         return SchemaNode()
 
     def _infer_string(self, data: str, path: str) -> SchemaNode:
-        schema = SchemaNode(
-            type=SchemaType.STRING,
-            minLength=0,
-            maxLength=len(data)
-        )
+        schema = SchemaNode(type=SchemaType.STRING, minLength=0, maxLength=len(data))
 
         matched = False
         for name, pattern in PATTERN_REGISTRY.items():
@@ -64,7 +60,10 @@ class SchemaInferrer:
             if path not in self.unknown_samples:
                 self.unknown_samples[path] = []
             max_samples = settings.INFERENCE_MAX_SAMPLES
-            if len(self.unknown_samples[path]) < max_samples and data not in self.unknown_samples[path]:
+            if (
+                len(self.unknown_samples[path]) < max_samples
+                and data not in self.unknown_samples[path]
+            ):
                 self.unknown_samples[path].append(data)
 
         return schema
@@ -72,11 +71,7 @@ class SchemaInferrer:
     def _infer_array(self, data: List[Any], path: str) -> SchemaNode:
         from src.bl.builder.mergers import SchemaMerger
 
-        schema = SchemaNode(
-            type=SchemaType.ARRAY,
-            minItems=0,
-            maxItems=len(data)
-        )
+        schema = SchemaNode(type=SchemaType.ARRAY, minItems=0, maxItems=len(data))
 
         if not data:
             logger.debug("Empty array at path '%s'", path)
@@ -94,9 +89,13 @@ class SchemaInferrer:
         return schema
 
     def _infer_object(self, data: Dict[str, Any], path: str) -> SchemaNode:
-        logger.debug("Inferring object schema at path '%s' with %d properties", path, len(data))
+        logger.debug(
+            "Inferring object schema at path '%s' with %d properties", path, len(data)
+        )
         return SchemaNode(
             type=SchemaType.OBJECT,
-            properties={k: self.infer(v, f"{path}.{k}" if path else k) for k, v in data.items()},
-            additionalProperties=False
+            properties={
+                k: self.infer(v, f"{path}.{k}" if path else k) for k, v in data.items()
+            },
+            additionalProperties=False,
         )

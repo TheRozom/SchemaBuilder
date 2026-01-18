@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field
 
 class SchemaNode(BaseModel):
     """Pydantic model for JSON Schema nodes with default values"""
+
     type: Optional[SchemaType] = None
 
     # String constraints
@@ -27,7 +28,9 @@ class SchemaNode(BaseModel):
     uniqueItems: Optional[bool] = None
 
     # Object constraints
-    properties: Dict[str, Union[Dict[str, Any], "SchemaNode"]] = Field(default_factory=dict)
+    properties: Dict[str, Union[Dict[str, Any], "SchemaNode"]] = Field(
+        default_factory=dict
+    )
     additionalProperties: Optional[bool] = None
     required: List[str] = Field(default_factory=list)
 

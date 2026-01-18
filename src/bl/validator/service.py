@@ -16,7 +16,9 @@ class SchemaValidator:
         self.formatter = ErrorFormatter()
         logger.debug("SchemaValidator initialized")
 
-    def validate_data_against_schema(self, schema: Dict[str, Any], data_list: List[Any]) -> ValidationResult:
+    def validate_data_against_schema(
+        self, schema: Dict[str, Any], data_list: List[Any]
+    ) -> ValidationResult:
         logger.info("Validating %d objects against schema", len(data_list))
 
         try:
@@ -43,10 +45,15 @@ class SchemaValidator:
 
         is_valid = len(all_errors) == 0
 
-        logger.info("Validation complete: %d valid, %d total errors",
-                   valid_count, len(all_errors))
+        logger.info(
+            "Validation complete: %d valid, %d total errors",
+            valid_count,
+            len(all_errors),
+        )
 
-        return ValidationResult(valid=is_valid, total_errors=len(all_errors), errors=all_errors)
+        return ValidationResult(
+            valid=is_valid, total_errors=len(all_errors), errors=all_errors
+        )
 
     def validate_single(self, schema: Dict[str, Any], data: Any) -> ValidationResult:
         return self.validate_data_against_schema(schema, [data])

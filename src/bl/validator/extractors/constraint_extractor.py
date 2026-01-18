@@ -64,13 +64,21 @@ class ConstraintExtractor:
                 return type_val if isinstance(type_val, str) else ", ".join(type_val)
             if SchemaKeyword.ANY_OF in schema:
                 types = self._extract_types_from_any_of(schema[SchemaKeyword.ANY_OF])
-                return f"{SchemaKeyword.ANY_OF}[{', '.join(types)}]" if types else SchemaKeyword.ANY_OF
+                return (
+                    f"{SchemaKeyword.ANY_OF}[{', '.join(types)}]"
+                    if types
+                    else SchemaKeyword.ANY_OF
+                )
             if SchemaKeyword.ONE_OF in schema:
                 return SchemaKeyword.ONE_OF
             if SchemaKeyword.ALL_OF in schema:
                 return SchemaKeyword.ALL_OF
         if error.validator == SchemaKeyword.TYPE:
-            return error.validator_value if isinstance(error.validator_value, str) else ", ".join(error.validator_value)
+            return (
+                error.validator_value
+                if isinstance(error.validator_value, str)
+                else ", ".join(error.validator_value)
+            )
         return None
 
     def _extract_types_from_any_of(self, any_of_schema: List[Any]) -> List[str]:
@@ -95,7 +103,9 @@ class ConstraintExtractor:
             return error.validator_value
         return None
 
-    def get_allowed_values(self, error: JsonSchemaValidationError) -> Optional[List[Any]]:
+    def get_allowed_values(
+        self, error: JsonSchemaValidationError
+    ) -> Optional[List[Any]]:
         """Get allowed values if enum constraint failed."""
         if error.validator == SchemaKeyword.ENUM:
             return error.validator_value
@@ -107,7 +117,11 @@ class ConstraintExtractor:
 
     def get_schema_path(self, error: JsonSchemaValidationError) -> str:
         """Get formatted schema path from error."""
-        return ".".join(str(p) for p in error.absolute_schema_path) if error.absolute_schema_path else ""
+        return (
+            ".".join(str(p) for p in error.absolute_schema_path)
+            if error.absolute_schema_path
+            else ""
+        )
 
     def get_actual_type(self, error: JsonSchemaValidationError) -> str:
         """Get actual type of the value."""
