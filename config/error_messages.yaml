@@ -1,0 +1,71 @@
+# Error messages and fix suggestions for JSON Schema validation
+# All strings are templates that support placeholders: {path}, {value}, {constraint_value}, {actual_type}, {expected_type}, {allowed_values}
+
+messages:
+  type:
+    fix: "At '{path}': Change type from '{expected_type}' to '{actual_type}' OR add '{actual_type}' to allowed types using anyOf/oneOf. Current value is {value_repr}"
+
+  required:
+    fix: "At '{path}': Remove '{missing_prop}' from 'required' array OR make the property optional"
+
+  additionalProperties:
+    fix: "At '{path}': Set 'additionalProperties: true' OR add the property '{prop_name}' to 'properties' in schema"
+
+  minLength:
+    fix: "At '{path}': Reduce 'minLength' from {constraint_value} to {actual_length} or less. Current value '{value_preview}' has length {actual_length}"
+
+  maxLength:
+    fix: "At '{path}': Increase 'maxLength' from {constraint_value} to {actual_length} or more. Current value has length {actual_length}"
+
+  minimum:
+    fix: "At '{path}': Reduce 'minimum' from {constraint_value} to {value} or less"
+
+  maximum:
+    fix: "At '{path}': Increase 'maximum' from {constraint_value} to {value} or more"
+
+  exclusiveMinimum:
+    fix: "At '{path}': Reduce 'exclusiveMinimum' from {constraint_value} to less than {value}"
+
+  exclusiveMaximum:
+    fix: "At '{path}': Increase 'exclusiveMaximum' from {constraint_value} to more than {value}"
+
+  pattern:
+    fix: "At '{path}': Modify 'pattern' regex '{constraint_value}' to match value '{value_preview}' OR remove pattern constraint"
+
+  format:
+    fix: "At '{path}': Remove 'format: {constraint_value}' constraint OR change format to match actual data format. Value '{value_preview}' doesn't match '{constraint_value}' format"
+
+  enum:
+    fix: "At '{path}': Add '{value}' to 'enum' array. Current allowed values: {allowed_values}"
+
+  const:
+    fix: "At '{path}': Change 'const' from {constraint_value_repr} to {value_repr} OR remove const constraint"
+
+  minItems:
+    fix: "At '{path}': Reduce 'minItems' from {constraint_value} to {actual_length} or less"
+
+  maxItems:
+    fix: "At '{path}': Increase 'maxItems' from {constraint_value} to {actual_length} or more"
+
+  uniqueItems:
+    fix: "At '{path}': Set 'uniqueItems: false' to allow duplicate items"
+
+  multipleOf:
+    fix: "At '{path}': Change 'multipleOf' from {constraint_value} to a divisor of {value} OR remove constraint"
+
+  anyOf:
+    fix: "At '{path}': Value '{value_preview}' (type: {actual_type}) doesn't match any schema in 'anyOf'. Add a new schema option that accepts type '{actual_type}' OR modify existing options"
+
+  oneOf:
+    fix: "At '{path}': Value '{value_preview}' doesn't match exactly one schema in 'oneOf'. Adjust schemas so exactly one matches"
+
+  allOf:
+    fix: "At '{path}': Value doesn't satisfy all schemas in 'allOf'. Review and adjust conflicting constraints"
+
+  not:
+    fix: "At '{path}': Value matches the 'not' schema when it shouldn't. Remove or modify the 'not' constraint"
+
+defaults:
+  fallback_fix: "At '{path}': Schema constraint '{validator}' failed for value '{value_preview}' (type: {actual_type}). Review and adjust the constraint"
+  unknown_property: "unknown"
+  default_property: "property"

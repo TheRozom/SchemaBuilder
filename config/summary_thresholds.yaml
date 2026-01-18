@@ -1,0 +1,34 @@
+summary_thresholds:
+  high_similarity:
+    threshold: 80
+    description: "High compatibility threshold"
+
+  moderate_similarity:
+    threshold: 50
+    description: "Moderate compatibility threshold"
+
+recommendations:
+  all_compatible:
+    message: "All {total} objects have compatible structures. Single schema is appropriate."
+    should_split: false
+    confidence: "HIGH"
+
+  all_incompatible:
+    message: "All {total} objects have incompatible structures. Create {unique_count} separate schemas."
+    should_split: true
+    confidence: "HIGH"
+
+  high_similarity:
+    message: "Found {unique_count} structure groups with high compatibility ({avg_similarity:.1f}%). Single schema with optional fields is acceptable."
+    should_split: false
+    confidence: "MEDIUM"
+
+  moderate_similarity:
+    message: "Found {unique_count} structure groups with moderate compatibility ({avg_similarity:.1f}%). Consider {unique_count} separate schemas."
+    should_split: true
+    confidence: "MEDIUM"
+
+  low_similarity:
+    message: "Found {unique_count} distinct structure groups with low compatibility ({avg_similarity:.1f}%). Create {unique_count} separate schemas."
+    should_split: true
+    confidence: "HIGH"
