@@ -28,7 +28,12 @@ class AmbiguityRule(IRule):
             if node.items:
                 traverse(node.items)
 
+            # Traverse all composition keywords
             for v in node.anyOf:
+                traverse(v)
+            for v in node.oneOf:
+                traverse(v)
+            for v in node.allOf:
                 traverse(v)
 
         traverse(schema)

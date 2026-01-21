@@ -77,6 +77,9 @@ class SchemaNode(BaseModel):
                     item.to_dict() if isinstance(item, SchemaNode) else item
                     for item in field_value
                 ]
+            elif isinstance(field_value, SchemaType):
+                # Convert SchemaType enum to its string value
+                result[field_name] = field_value.value
             else:
                 result[field_name] = field_value
 

@@ -19,7 +19,13 @@ class TreeBuilder:
                 if TypeChecker.is_dict(value):
                     tree[key] = self.build(value)
                 elif TypeChecker.is_list_of_dicts(value):
-                    tree[f"{key}[]"] = self.build(value[0])
+                    # Merge all dict structures in the list to capture all keys
+                    merged_tree = {}
+                    for item in value:
+                        if TypeChecker.is_dict(item):
+                            item_tree = self.build(item)
+                            merged_tree = TreeTraversal.merge_trees(merged_tree, item_tree) or {}
+                    tree[f"{key}[]"] = merged_tree
                 else:
                     tree[key] = None
             return tree
