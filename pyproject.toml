@@ -15,6 +15,11 @@ pydantic-settings = "^2.1.0"
 orjson = "^3.9.0"
 genson = "^1.2.2"
 jsonschema = "^4.20.0"
+faker = "^22.0.0"
+sentence-transformers = "^2.3.0"
+numpy = "^2.0.0"
+pandas = "^2.1.0"
+scipy = "^1.14.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"

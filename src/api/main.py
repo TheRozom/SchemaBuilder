@@ -13,6 +13,7 @@ from src.bl.builder import SchemaBuilderService
 from src.bl.scoring.engine.scoring_engine import ScoringEngine
 from src.bl.analyzer import SchemaAnalyzer
 from src.bl.validator import SchemaValidator
+from src.bl.generator import GeneratorService
 from src.shared import (
     SchemaBuilderError,
     ValidationException,
@@ -60,6 +61,10 @@ def get_ai_service() -> IAIService:
 
 def get_schema_service(ai: IAIService = Depends(get_ai_service)) -> ISchemaService:
     return SchemaBuilderService(ai_service=ai)
+
+
+def get_generator_service() -> GeneratorService:
+    return GeneratorService()
 
 
 @app.get("/health")
@@ -236,6 +241,138 @@ async def validate_data(
         "total_errors": validation_result.total_errors,
         "errors": [error.model_dump() for error in validation_result.errors],
     }
+
+
+@app.post("/generator/mock-data")
+async def generate_mock_data(
+    schema: dict[str, Any] = Body(..., description="JSON Schema to generate data from"),
+    count: int = Body(10, description="Number of records to generate", ge=1, le=1000),
+    use_semantic_hints: bool = Body(True, description="Use semantic field detection"),
+    generator_service: GeneratorService = Depends(get_generator_service),
+):
+    """Generate mock data from a JSON schema."""
+    logger.info("POST /generator/mock-data - count=%d", count)
+
+    if not schema:
+        raise InputValidationError(
+            message="Schema cannot be empty",
+            field="schema",
+        )
+
+    mock_data = generator_service.generate_mock_data(
+        schema, count=count, use_semantic_hints=use_semantic_hints
+    )
+
+    logger.info("Generated %d mock records", len(mock_data))
+    return {"count": len(mock_data), "data": mock_data}
+
+
+@app.post("/generator/from-examples")
+async def generate_from_examples(
+    examples: list[dict[str, Any]] = Body(..., description="Example records to learn from"),
+    count: int = Body(10, description="Number of records to generate", ge=1, le=1000),
+    generator_service: GeneratorService = Depends(get_generator_service),
+):
+    """Generate mock data based on example records."""
+    logger.info("POST /generator/from-examples - %d examples, count=%d", len(examples), count)
+
+    if not examples:
+        raise InputValidationError(
+            message="Examples list cannot be empty",
+            field="examples",
+        )
+
+    mock_data = generator_service.generate_from_examples(examples, count=count)
+
+    logger.info("Generated %d mock records from examples", len(mock_data))
+    return {"count": len(mock_data), "data": mock_data}
+
+
+@app.post("/generator/infer-regex")
+async def infer_regex_pattern(
+    examples: list[str] = Body(..., description="Example strings to infer pattern from"),
+    strict: bool = Body(True, description="Generate strict or flexible pattern"),
+    generator_service: GeneratorService = Depends(get_generator_service),
+):
+    """Infer regex pattern from example strings without AI."""
+    logger.info("POST /generator/infer-regex - %d examples", len(examples))
+
+    if not examples:
+        raise InputValidationError(
+            message="Examples list cannot be empty",
+            field="examples",
+        )
+
+    pattern = generator_service.infer_regex_pattern(examples, strict=strict)
+    analysis = generator_service.analyze_field_pattern(examples)
+
+    logger.info("Inferred regex pattern: %s", pattern)
+    return {
+        "pattern": pattern,
+        "analysis": analysis,
+    }
+
+
+@app.post("/generator/detect-field-type")
+async def detect_field_type(
+    field_name: str = Body(..., description="Name of the field"),
+    sample_values: list[str] | None = Body(None, description="Optional sample values"),
+    top_suggestions: int = Body(3, description="Number of suggestions", ge=1, le=10),
+    generator_service: GeneratorService = Depends(get_generator_service),
+):
+    """Detect semantic field type using embeddings."""
+    logger.info("POST /generator/detect-field-type - field=%s", field_name)
+
+    detected_type, confidence = generator_service.detect_field_type(field_name, sample_values)
+    suggestions = generator_service.get_field_suggestions(field_name, top_k=top_suggestions)
+
+    logger.info("Detected type: %s (confidence: %.2f)", detected_type, confidence)
+    return {
+        "field_name": field_name,
+        "detected_type": detected_type,
+        "confidence": confidence,
+        "suggestions": [
+            {"type": sug_type, "confidence": sug_conf} for sug_type, sug_conf in suggestions
+        ],
+    }
+
+
+@app.post("/generator/field-analysis")
+async def analyze_field(
+    field_name: str = Body(..., description="Name of the field"),
+    examples: list[str] | None = Body(None, description="Optional example values"),
+    generator_service: GeneratorService = Depends(get_generator_service),
+):
+    """Get comprehensive field analysis including semantic type and pattern detection."""
+    logger.info("POST /generator/field-analysis - field=%s", field_name)
+
+    report = generator_service.generate_comprehensive_report(field_name, examples)
+
+    logger.info("Field analysis complete for %s", field_name)
+    return report
+
+
+@app.post("/generator/enhance-schema")
+async def enhance_schema_with_patterns(
+    schema: dict[str, Any] = Body(..., description="JSON Schema to enhance"),
+    examples_by_field: dict[str, list[str]] = Body(
+        ..., description="Example values for each field"
+    ),
+    generator_service: GeneratorService = Depends(get_generator_service),
+):
+    """Enhance JSON schema with inferred regex patterns."""
+    logger.info("POST /generator/enhance-schema - %d fields", len(examples_by_field))
+
+    if not schema:
+        raise InputValidationError(
+            message="Schema cannot be empty",
+            field="schema",
+        )
+
+    enhanced_schema = generator_service.enhance_schema_with_patterns(schema, examples_by_field)
+
+    logger.info("Schema enhanced with patterns")
+    return {"schema": enhanced_schema}
 
 
 if __name__ == "__main__":
