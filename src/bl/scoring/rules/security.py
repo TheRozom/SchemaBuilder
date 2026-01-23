@@ -46,10 +46,10 @@ class SecurityRule(IRule):
                     logger.warning("Security issue: %s", self._issue_found)
                     return False
 
-            if node.type == SchemaType.INTEGER:
+            if node.type in (SchemaType.INTEGER, SchemaType.NUMBER):
                 if node.maximum and node.maximum > 10**max_int_digits:
                     self.score_zero = True
-                    self._issue_found = f"Integer maximum exceeds 10^{max_int_digits}"
+                    self._issue_found = f"Numeric maximum exceeds 10^{max_int_digits}"
                     logger.warning("Security issue: %s", self._issue_found)
                     return False
 

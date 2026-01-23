@@ -13,15 +13,21 @@ class RegexInjector:
             for k, v in schema.properties.items():
                 next_path = f"{current_path}.{k}" if current_path else k
                 if target_path.startswith(next_path):
-                    prop_schema = v if isinstance(v, SchemaNode) else SchemaNode(**v)
-                    self.inject(prop_schema, target_path, regex, next_path)
+                    if isinstance(v, SchemaNode):
+                        self.inject(v, target_path, regex, next_path)
+                    else:
+                        # Convert dict to SchemaNode and update the original properties
+                        prop_schema = SchemaNode(**v)
+                        self.inject(prop_schema, target_path, regex, next_path)
+                        schema.properties[k] = prop_schema
 
         if schema.type == SchemaType.ARRAY and schema.items:
             next_path = current_path + "[]"
             if target_path.startswith(next_path):
-                items_schema = (
-                    schema.items
-                    if isinstance(schema.items, SchemaNode)
-                    else SchemaNode(**schema.items)
-                )
-                self.inject(items_schema, target_path, regex, next_path)
+                if isinstance(schema.items, SchemaNode):
+                    self.inject(schema.items, target_path, regex, next_path)
+                else:
+                    # Convert dict to SchemaNode and update the original items
+                    items_schema = SchemaNode(**schema.items)
+                    self.inject(items_schema, target_path, regex, next_path)
+                    schema.items = items_schema

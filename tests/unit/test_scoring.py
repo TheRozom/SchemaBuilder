@@ -1,5 +1,5 @@
 import pytest
-from src.bl.scoring.scoring_engine import ScoringEngine
+from src.bl.scoring.engine.scoring_engine import ScoringEngine
 
 
 def test_perfect_score():

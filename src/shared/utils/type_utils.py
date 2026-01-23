@@ -49,10 +49,11 @@ class TypeChecker:
 
     @staticmethod
     def is_list_of_dicts(value: Any) -> bool:
+        """Check if value is a non-empty list where ALL elements are dicts"""
         return (
             TypeChecker.is_list(value)
             and len(value) > 0
-            and TypeChecker.is_dict(value[0])
+            and all(TypeChecker.is_dict(item) for item in value)
         )
 
     @staticmethod

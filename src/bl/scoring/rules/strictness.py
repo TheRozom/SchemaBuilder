@@ -34,5 +34,13 @@ class StrictnessRule(IRule):
                 if node.items:
                     traverse(node.items)
 
+            # Traverse composition keywords (anyOf, oneOf, allOf)
+            for branch in node.anyOf:
+                traverse(branch)
+            for branch in node.oneOf:
+                traverse(branch)
+            for branch in node.allOf:
+                traverse(branch)
+
         traverse(schema)
         return passed_checks / total_checks if total_checks > 0 else 1.0

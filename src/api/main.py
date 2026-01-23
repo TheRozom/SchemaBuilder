@@ -37,9 +37,7 @@ app.add_middleware(
 
 
 @app.exception_handler(SchemaBuilderError)
-async def schema_builder_error_handler(
-    _request: Request, exc: SchemaBuilderError
-) -> JSONResponse:
+async def schema_builder_error_handler(_request: Request, exc: SchemaBuilderError) -> JSONResponse:
     logger.error("SchemaBuilderError: %s", exc.message)
     return JSONResponse(
         status_code=400,
@@ -48,9 +46,7 @@ async def schema_builder_error_handler(
 
 
 @app.exception_handler(ValidationException)
-async def validation_exception_handler(
-    _request: Request, exc: ValidationException
-) -> JSONResponse:
+async def validation_exception_handler(_request: Request, exc: ValidationException) -> JSONResponse:
     logger.error("ValidationException: %s", exc.message)
     return JSONResponse(
         status_code=422,
@@ -73,9 +69,7 @@ async def health_check():
 
 @app.post("/schemas/build", response_model=SchemaDefinition)
 async def build_schema(
-    data: list[Any] = Body(
-        ..., description="List of JSON objects to build schema from"
-    ),
+    data: list[Any] = Body(..., description="List of JSON objects to build schema from"),
     schema_service: ISchemaService = Depends(get_schema_service),
     ai_service: IAIService = Depends(get_ai_service),
 ):
@@ -110,9 +104,7 @@ async def build_schema(
     schema_def.score = score_res
 
     validator = SchemaValidator()
-    validation_res = validator.validate_data_against_schema(
-        schema_def.schema_content, data
-    )
+    validation_res = validator.validate_data_against_schema(schema_def.schema_content, data)
     schema_def.validation = ValidationResult(**validation_res.to_dict())
 
     logger.info("Schema built successfully with score %d", score_res.overall)
@@ -121,11 +113,27 @@ async def build_schema(
 
 @app.post("/schemas/infer", response_model=SchemaDefinition)
 async def infer_schema_from_data(
-    data: Any = Body(..., description="Raw JSON data to infer schema from"),
+    request: Request,
     schema_service: ISchemaService = Depends(get_schema_service),
     ai_service: IAIService = Depends(get_ai_service),
 ):
     logger.info("POST /schemas/infer")
+
+    # Get the raw JSON body to allow null values
+    # Handle empty body (from json=None in httpx) as null
+    body = await request.body()
+    if not body or body == b"":
+        data = None
+    else:
+        import json
+
+        try:
+            data = json.loads(body)
+        except json.JSONDecodeError as e:
+            raise ValidationException(
+                message=f"Invalid JSON in request body: {e}",
+                details={"error": str(e)},
+            ) from e
 
     schema_def = await schema_service.generate_schema(data)
 
@@ -139,9 +147,7 @@ async def infer_schema_from_data(
 
     validator = SchemaValidator()
     data_list = data if isinstance(data, list) else [data]
-    validation_res = validator.validate_data_against_schema(
-        schema_def.schema_content, data_list
-    )
+    validation_res = validator.validate_data_against_schema(schema_def.schema_content, data_list)
     schema_def.validation = ValidationResult(**validation_res.to_dict())
 
     logger.info("Schema inferred successfully with score %d", score_res.overall)
@@ -173,13 +179,9 @@ async def score_schema(
 
 @app.post("/schemas/analyze", response_model=ConflictAnalysis)
 async def analyze_schema_conflicts(
-    data: list[Any] = Body(
-        ..., description="List of JSON objects to analyze for conflicts"
-    )
+    data: list[Any] = Body(..., description="List of JSON objects to analyze for conflicts")
 ):
-    logger.info(
-        "POST /schemas/analyze - %d items", len(data) if isinstance(data, list) else 0
-    )
+    logger.info("POST /schemas/analyze - %d items", len(data) if isinstance(data, list) else 0)
 
     if not isinstance(data, list):
         raise InputValidationError(
