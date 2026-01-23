@@ -23,3 +23,12 @@ patterns:
     regex: "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:?\\d{2})?$"
     description: "ISO datetime pattern"
     flags: []
+  english_words:
+    regex: "^[A-Za-z]+$"
+    description: "Pattern for English words containing only alphabetic characters"
+    flags: ["IGNORECASE"]
+  numbers_only:
+    regex: "^[0-9]+$"
+    description: "Pattern for strings containing only numeric characters"
+    flags: []
+    

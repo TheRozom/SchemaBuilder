@@ -9,9 +9,7 @@ logger = get_logger(__name__)
 class TreeBuilder:
 
     def build(self, data: Any) -> Dict[str, Any]:
-        logger.debug(
-            "Building tree from data type: %s", TypeChecker.get_type_name(data)
-        )
+        logger.debug("Building tree from data type: %s", TypeChecker.get_type_name(data))
 
         if TypeChecker.is_dict(data):
             tree = {}

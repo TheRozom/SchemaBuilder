@@ -1,6 +1,7 @@
 from typing import Any, Dict, List
 
 from jsonschema import Draft7Validator, SchemaError
+from jsonschema.exceptions import _WrappedReferencingError
 
 from src.core import get_logger
 from src.shared.models import ValidationResult, ValidationError
@@ -34,7 +35,14 @@ class SchemaValidator:
         valid_count = 0
 
         for idx, item in enumerate(data_list):
-            errors = list(validator.iter_errors(item))
+            try:
+                errors = list(validator.iter_errors(item))
+            except _WrappedReferencingError as e:
+                logger.error("Schema reference error during validation: %s", e)
+                raise ValidationException(
+                    message=f"Invalid schema reference: {str(e)}",
+                    path=None,
+                ) from e
 
             if errors:
                 formatted_errors = self.formatter.format(idx, errors)
@@ -51,9 +59,7 @@ class SchemaValidator:
             len(all_errors),
         )
 
-        return ValidationResult(
-            valid=is_valid, total_errors=len(all_errors), errors=all_errors
-        )
+        return ValidationResult(valid=is_valid, total_errors=len(all_errors), errors=all_errors)
 
     def validate_single(self, schema: Dict[str, Any], data: Any) -> ValidationResult:
         return self.validate_data_against_schema(schema, [data])
