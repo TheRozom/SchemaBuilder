@@ -27,9 +27,9 @@ async def test_email_pattern_inference(service):
     schema = await service.generate_schema(data)
     s = schema.schema_content
     assert s["type"] == "string"
-    # Check explicitly for pattern regex string
+    # Check explicitly for pattern regex string (updated to match config pattern)
     assert "pattern" in s
-    assert s["pattern"] == r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
+    assert s["pattern"] == r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
 
 
 @pytest.mark.asyncio
@@ -60,9 +60,7 @@ async def test_list_merging_integers(service):
     s = schema.schema_content
     assert s["type"] == "array"
     assert s["minItems"] == 0
-    assert (
-        s["maxItems"] == 2
-    )  # Max length between [5, 15] (len=2) and potentially others?
+    assert s["maxItems"] == 2  # Max length between [5, 15] (len=2) and potentially others?
     # Wait, the test data is `data = [5, 15]`. This is ONE list.
     # Schema inference on `[5, 15]` -> len is 2.
     # The SERVICE inference currently iterates items but the top level IS the list.

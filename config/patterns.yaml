@@ -1,16 +1,16 @@
 patterns:
   email:
-    regex: "^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\\.[a-zA-Z0-9-.]+$"
+    regex: "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$"
     description: "Email address pattern"
     flags: []
 
   uuid:
-    regex: "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
-    description: "UUID pattern"
-    flags: ["IGNORECASE"]
+    regex: "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+    description: "UUID pattern (case-insensitive via character class)"
+    flags: []
 
   ipv4:
-    regex: "^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$"
+    regex: "^(\\d{1,3}\\.){3}\\d{1,3}$"
     description: "IPv4 address pattern"
     flags: []
 
@@ -31,4 +31,43 @@ patterns:
     regex: "^[0-9]+$"
     description: "Pattern for strings containing only numeric characters"
     flags: []
-    
+
+  url:
+    regex: "^https?://[^\\s]+$"
+    description: "URL pattern (http/https)"
+    flags: []
+
+  phone_us:
+    regex: "^\\+?1?\\s*\\(?(\\d{3})\\)?[-.\\s]?(\\d{3})[-.\\s]?(\\d{4})$"
+    description: "US phone number pattern"
+    flags: []
+
+  phone_intl:
+    regex: "^\\+?[\\d\\s\\-\\(\\)]+$"
+    description: "International phone number pattern"
+    flags: []
+
+  zipcode_us:
+    regex: "^\\d{5}(-\\d{4})?$"
+    description: "US ZIP code pattern (5 or 9 digits)"
+    flags: []
+
+  date_us:
+    regex: "^\\d{1,2}/\\d{1,2}/\\d{2,4}$"
+    description: "US date pattern (MM/DD/YYYY)"
+    flags: []
+
+  time:
+    regex: "^\\d{1,2}:\\d{2}(:\\d{2})?(\\s?(AM|PM))?$"
+    description: "Time pattern (12 or 24 hour)"
+    flags: ["IGNORECASE"]
+
+  hex_color:
+    regex: "^#[0-9a-fA-F]{6}$"
+    description: "Hexadecimal color code pattern"
+    flags: []
+
+  credit_card:
+    regex: "^\\d{4}[\\s-]?\\d{4}[\\s-]?\\d{4}[\\s-]?\\d{4}$"
+    description: "Credit card number pattern"
+    flags: []

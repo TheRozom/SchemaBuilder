@@ -1,28 +1,14 @@
 """Regex generation without AI using frequency analysis and heuristics."""
 
 import re
-from typing import List, Optional, Set
+from typing import List, Optional, Set, Dict, Pattern
 from collections import Counter
+
+from src.bl.builder.config.patterns import PATTERN_REGISTRY
 
 
 class RegexGenerator:
     """Generates regex patterns from examples using frequency analysis."""
-
-    # Pre-defined patterns for common data types
-    COMMON_PATTERNS = {
-        "email": r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
-        "url": r"^https?://[^\s]+$",
-        "phone_us": r"^\+?1?\s*\(?(\d{3})\)?[-.\s]?(\d{3})[-.\s]?(\d{4})$",
-        "phone_intl": r"^\+?[\d\s\-\(\)]+$",
-        "zipcode_us": r"^\d{5}(-\d{4})?$",
-        "date_iso": r"^\d{4}-\d{2}-\d{2}$",
-        "date_us": r"^\d{1,2}/\d{1,2}/\d{2,4}$",
-        "time": r"^\d{1,2}:\d{2}(:\d{2})?(\s?(AM|PM))?$",
-        "ipv4": r"^(\d{1,3}\.){3}\d{1,3}$",
-        "hex_color": r"^#[0-9a-fA-F]{6}$",
-        "uuid": r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
-        "credit_card": r"^\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}$",
-    }
 
     def __init__(self, use_common_patterns: bool = True):
         """
@@ -32,6 +18,26 @@ class RegexGenerator:
             use_common_patterns: Whether to try matching against common patterns first
         """
         self.use_common_patterns = use_common_patterns
+
+        # Load patterns from centralized config
+        self.COMMON_PATTERNS = self._load_patterns_from_registry()
+
+    def _load_patterns_from_registry(self) -> Dict[str, str]:
+        """
+        Load regex patterns from the centralized pattern registry.
+
+        Returns:
+            Dictionary mapping pattern names to regex strings
+        """
+        patterns = {}
+        for pattern_name, pattern_obj in PATTERN_REGISTRY.items():
+            patterns[pattern_name] = pattern_obj.pattern
+
+        # Add alias for backward compatibility (date → date_iso)
+        if "date" in patterns and "date_iso" not in patterns:
+            patterns["date_iso"] = patterns["date"]
+
+        return patterns
 
     def generate(self, examples: List[str], strict: bool = True) -> Optional[str]:
         """
