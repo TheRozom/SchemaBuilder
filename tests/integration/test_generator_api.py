@@ -1,8 +1,10 @@
 """Integration tests for generator API endpoints."""
 
 import pytest
-from httpx import AsyncClient
+from httpx import AsyncClient, ASGITransport
 from src.api.main import app
+
+transport = ASGITransport(app=app)
 
 
 @pytest.mark.asyncio
@@ -11,7 +13,7 @@ class TestGeneratorAPI:
 
     async def test_generate_mock_data(self):
         """Test mock data generation endpoint."""
-        async with AsyncClient(app=app, base_url="http://test") as client:
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
             schema = {
                 "type": "object",
                 "properties": {
@@ -43,14 +45,14 @@ class TestGeneratorAPI:
 
     async def test_generate_mock_data_empty_schema(self):
         """Test with empty schema."""
-        async with AsyncClient(app=app, base_url="http://test") as client:
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
             response = await client.post("/generator/mock-data", json={"schema": {}, "count": 5})
 
             assert response.status_code == 400
 
     async def test_generate_from_examples(self):
         """Test generation from examples endpoint."""
-        async with AsyncClient(app=app, base_url="http://test") as client:
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
             examples = [
                 {"name": "John", "age": 30, "city": "New York"},
                 {"name": "Jane", "age": 25, "city": "London"},
@@ -74,7 +76,7 @@ class TestGeneratorAPI:
 
     async def test_generate_from_examples_empty(self):
         """Test with empty examples."""
-        async with AsyncClient(app=app, base_url="http://test") as client:
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
             response = await client.post(
                 "/generator/from-examples", json={"examples": [], "count": 5}
             )
@@ -83,7 +85,7 @@ class TestGeneratorAPI:
 
     async def test_infer_regex_pattern(self):
         """Test regex pattern inference endpoint."""
-        async with AsyncClient(app=app, base_url="http://test") as client:
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
             examples = ["user@test.com", "admin@example.org", "info@company.net"]
 
             response = await client.post(
@@ -99,7 +101,7 @@ class TestGeneratorAPI:
 
     async def test_infer_regex_digit_pattern(self):
         """Test regex inference for digit patterns."""
-        async with AsyncClient(app=app, base_url="http://test") as client:
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
             examples = ["1234", "5678", "9012"]
 
             response = await client.post(
@@ -113,7 +115,7 @@ class TestGeneratorAPI:
 
     async def test_infer_regex_empty_examples(self):
         """Test regex inference with empty examples."""
-        async with AsyncClient(app=app, base_url="http://test") as client:
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
             response = await client.post(
                 "/generator/infer-regex", json={"examples": [], "strict": True}
             )
@@ -122,7 +124,7 @@ class TestGeneratorAPI:
 
     async def test_detect_field_type(self):
         """Test field type detection endpoint."""
-        async with AsyncClient(app=app, base_url="http://test") as client:
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
             response = await client.post(
                 "/generator/detect-field-type",
                 json={
@@ -144,7 +146,7 @@ class TestGeneratorAPI:
 
     async def test_detect_field_type_with_samples(self):
         """Test field type detection with sample values."""
-        async with AsyncClient(app=app, base_url="http://test") as client:
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
             response = await client.post(
                 "/generator/detect-field-type",
                 json={
@@ -161,7 +163,7 @@ class TestGeneratorAPI:
 
     async def test_analyze_field(self):
         """Test comprehensive field analysis endpoint."""
-        async with AsyncClient(app=app, base_url="http://test") as client:
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
             response = await client.post(
                 "/generator/field-analysis",
                 json={
@@ -184,7 +186,7 @@ class TestGeneratorAPI:
 
     async def test_analyze_field_without_examples(self):
         """Test field analysis without examples."""
-        async with AsyncClient(app=app, base_url="http://test") as client:
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
             response = await client.post(
                 "/generator/field-analysis",
                 json={"field_name": "phone_number", "examples": None},
@@ -199,7 +201,7 @@ class TestGeneratorAPI:
 
     async def test_enhance_schema_with_patterns(self):
         """Test schema enhancement with patterns."""
-        async with AsyncClient(app=app, base_url="http://test") as client:
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
             schema = {
                 "type": "object",
                 "properties": {
@@ -231,7 +233,7 @@ class TestGeneratorAPI:
 
     async def test_enhance_schema_empty(self):
         """Test schema enhancement with empty schema."""
-        async with AsyncClient(app=app, base_url="http://test") as client:
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
             response = await client.post(
                 "/generator/enhance-schema",
                 json={"schema": {}, "examples_by_field": {"field": ["value"]}},
@@ -241,7 +243,7 @@ class TestGeneratorAPI:
 
     async def test_mock_data_count_limits(self):
         """Test count parameter limits."""
-        async with AsyncClient(app=app, base_url="http://test") as client:
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
             schema = {
                 "type": "object",
                 "properties": {"name": {"type": "string"}},
@@ -261,7 +263,7 @@ class TestGeneratorAPI:
 
     async def test_mock_data_complex_schema(self):
         """Test with complex nested schema."""
-        async with AsyncClient(app=app, base_url="http://test") as client:
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
             schema = {
                 "type": "object",
                 "properties": {
@@ -307,7 +309,7 @@ class TestGeneratorAPI:
 
     async def test_semantic_hints_toggle(self):
         """Test semantic hints can be toggled."""
-        async with AsyncClient(app=app, base_url="http://test") as client:
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
             schema = {
                 "type": "object",
                 "properties": {
@@ -332,7 +334,7 @@ class TestGeneratorAPI:
 
     async def test_regex_strict_vs_flexible(self):
         """Test strict vs flexible regex generation."""
-        async with AsyncClient(app=app, base_url="http://test") as client:
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
             examples = ["12", "345", "6789"]
 
             # Strict pattern
