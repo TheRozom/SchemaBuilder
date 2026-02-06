@@ -148,11 +148,19 @@ class TestMockDataGenerator:
         result = gen.generate_from_schema(schema, count=1)
         assert 0 <= result["value"] <= 1000
 
-    def test_generate_by_regex(self, generator):
-        value = generator._generate_by_regex(r"\d{4}")
-        if value is not None:
-            assert isinstance(value, str)
+    def test_pattern_strategy_handles_regex(self, generator):
+        schema = {
+            "type": "object",
+            "properties": {"code": {"type": "string", "pattern": r"\d{4}"}},
+        }
+        result = generator.generate_from_schema(schema, count=1)
+        if result.get("code"):
+            assert isinstance(result["code"], str)
 
-    def test_generate_by_pattern(self, generator):
-        value = generator._generate_by_pattern(r"^\d+$")
-        assert value is None or isinstance(value, str)
+    def test_pattern_strategy_handles_pattern(self, generator):
+        schema = {
+            "type": "object",
+            "properties": {"value": {"type": "string", "pattern": r"^\d+$"}},
+        }
+        result = generator.generate_from_schema(schema, count=1)
+        assert isinstance(result["value"], str)

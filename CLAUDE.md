@@ -88,6 +88,30 @@ def get_schema_service(ai: IAIService = Depends(get_ai_service)) -> ISchemaServi
 - Pydantic models handle request/response validation
 - YAML configs loaded via `src/core/config_loader.py`
 
+### Dependency Injection Pattern
+
+Services use centralized `service_config` (in `src/core/service_config.py`) for all shared utilities:
+
+```python
+from src.core.service_config import service_config
+
+class MyService:
+    def __init__(self):
+        self.dependency = service_config.dependency
+```
+
+**Key points:**
+- All services directly use `service_config` - no constructor parameters for dependencies
+- Tests can mock by modifying `service_config` attributes or using `service_config.reset()`
+- `service_config` uses `@cached_property` for lazy-loaded singletons
+- Only stateless utilities belong in `service_config` (TreeBuilder, SchemaMerger, etc.)
+
+## Code Style
+
+- **IMPORTANT**: Never use docstrings (triple-quoted strings `"""`) in this codebase
+- **IMPORTANT**: Never use inline comments (`#`) - code should be self-documenting
+- Keep function and variable names clear and descriptive
+
 ## Testing
 
 - Unit tests mirror source structure: `tests/unit/test_builder/`, `tests/unit/test_scoring/`, etc.

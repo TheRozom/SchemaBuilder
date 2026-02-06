@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from typing import Any, Callable, Dict, Protocol, runtime_checkable
 
 from src.shared.models import SchemaNode
@@ -8,23 +9,40 @@ class IRule(Protocol):
     def evaluate(self, schema: Dict[str, Any]) -> float: ...
 
 
-class BaseRule:
-    """Mixin providing shared schema traversal logic for scoring rules."""
+class RuleContext:
+    def __init__(self):
+        self.total = 0
+        self.passed = 0
+
+    def add_check(self, passed: bool = True) -> None:
+        self.total += 1
+        if passed:
+            self.passed += 1
+
+    def get_score(self) -> float:
+        return self.passed / self.total if self.total > 0 else 1.0
+
+
+class BaseRule(ABC):
+    def evaluate(self, schema: Dict[str, Any]) -> float:
+        context = RuleContext()
+
+        def visit(node: SchemaNode):
+            self._evaluate_node(node, context)
+
+        self._traverse_schema(schema, visit)
+
+        return context.get_score()
+
+    @abstractmethod
+    def _evaluate_node(self, node: SchemaNode, context: RuleContext) -> None:
+        pass
 
     def _traverse_schema(
         self,
         node_dict: Dict[str, Any],
         visit: Callable[[SchemaNode], None],
     ) -> None:
-        """Traverse a JSON Schema structure, calling visit() on each node.
-
-        Handles recursion into properties, items, anyOf, oneOf, and allOf.
-        Subclasses provide a visit callback to inspect each SchemaNode.
-
-        Args:
-            node_dict: The raw schema dict to traverse.
-            visit: Callback invoked with a parsed SchemaNode for each node.
-        """
         if not isinstance(node_dict, dict):
             return
 

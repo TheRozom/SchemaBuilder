@@ -14,3 +14,4 @@ build/
 .claude/
 backend/
 task.md
+DESIGN_PATTERNS*.md

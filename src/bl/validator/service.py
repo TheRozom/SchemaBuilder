@@ -4,17 +4,16 @@ from jsonschema import Draft7Validator, SchemaError
 from jsonschema.exceptions import _WrappedReferencingError
 
 from src.core import get_logger
+from src.core.service_config import service_config
 from src.shared.exceptions import ValidationError as ValidationException
 from src.shared.models import ValidationError, ValidationResult
-
-from .formatters import ErrorFormatter
 
 logger = get_logger(__name__)
 
 
 class SchemaValidator:
     def __init__(self):
-        self.formatter = ErrorFormatter()
+        self.formatter = service_config.error_formatter
         logger.debug("SchemaValidator initialized")
 
     def validate_data_against_schema(

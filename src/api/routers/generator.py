@@ -4,6 +4,7 @@ from fastapi import APIRouter, Body, Depends
 
 from src.bl.generator import MockDataGenerator
 from src.core import get_logger
+from src.core.service_factory import get_factory
 from src.shared import InputValidationError
 
 logger = get_logger(__name__)
@@ -12,7 +13,7 @@ router = APIRouter(prefix="/generator", tags=["generator"])
 
 
 def get_mock_generator() -> MockDataGenerator:
-    return MockDataGenerator()
+    return get_factory().create_mock_generator()
 
 
 @router.post("/mock-data")

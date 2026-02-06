@@ -3,14 +3,10 @@ from typing import Any
 from fastapi import APIRouter, Body, Depends, Request
 
 from src.bl.analyzer import SchemaAnalyzer
-from src.bl.builder import SchemaBuilderService
-from src.bl.scoring.engine.scoring_engine import ScoringEngine
-from src.bl.validator import SchemaValidator
+from src.bl.facade import SchemaBuilderFacade
 from src.core import get_logger
-from src.core.config import settings
-from src.domain.interfaces import IAIService, ISchemaService
-from src.domain.models import ConflictAnalysis, SchemaDefinition, ValidationResult
-from src.infrastructure.ai_service import OpenAIService
+from src.core.service_factory import get_factory
+from src.domain.models import ConflictAnalysis, SchemaDefinition
 from src.shared import InputValidationError, ValidationException
 
 logger = get_logger(__name__)
@@ -18,19 +14,18 @@ logger = get_logger(__name__)
 router = APIRouter(prefix="/schemas", tags=["schemas"])
 
 
-def get_ai_service() -> IAIService:
-    return OpenAIService()
-
-
-def get_schema_service() -> ISchemaService:
-    return SchemaBuilderService()
+def get_facade() -> SchemaBuilderFacade:
+    factory = get_factory()
+    return SchemaBuilderFacade(
+        schema_service=factory.create_schema_service(),
+        ai_service=factory.create_ai_service(),
+    )
 
 
 @router.post("/build", response_model=SchemaDefinition)
 async def build_schema(
     data: list[Any] = Body(..., description="List of JSON objects to build schema from"),
-    schema_service: ISchemaService = Depends(get_schema_service),
-    ai_service: IAIService = Depends(get_ai_service),
+    facade: SchemaBuilderFacade = Depends(get_facade),
 ):
     logger.info("POST /schemas/build - %d items", len(data))
 
@@ -46,31 +41,13 @@ async def build_schema(
             expected_type="object",
         )
 
-    schema_def, analysis_result = await schema_service.generate_schema_from_list(data)
-
-    if analysis_result:
-        schema_def.analysis = ConflictAnalysis(**analysis_result.summary.model_dump())
-
-    scorer = ScoringEngine()
-    score_res = scorer.score(schema_def.schema_content)
-
-    if settings.ENABLE_AI:
-        score_res.ai_score = await ai_service.evaluate_schema(schema_def.schema_content)
-
-    schema_def.score = score_res
-    validator = SchemaValidator()
-    validation_res = validator.validate_data_against_schema(schema_def.schema_content, data)
-    schema_def.validation = ValidationResult(**validation_res.model_dump())
-    logger.info("Schema built successfully with score %d", score_res.overall)
-
-    return schema_def
+    return await facade.build_schema_from_list(data)
 
 
 @router.post("/infer", response_model=SchemaDefinition)
 async def infer_schema_from_data(
     request: Request,
-    schema_service: ISchemaService = Depends(get_schema_service),
-    ai_service: IAIService = Depends(get_ai_service),
+    facade: SchemaBuilderFacade = Depends(get_facade),
 ):
     logger.info("POST /schemas/infer")
     body = await request.body()
@@ -90,43 +67,20 @@ async def infer_schema_from_data(
                 details={"error": str(e)},
             ) from e
 
-    schema_def = schema_service.generate_schema(data)
-    scorer = ScoringEngine()
-    score_res = scorer.score(schema_def.schema_content)
-
-    if settings.ENABLE_AI:
-        score_res.ai_score = await ai_service.evaluate_schema(schema_def.schema_content)
-
-    schema_def.score = score_res
-    validator = SchemaValidator()
-    data_list = data if isinstance(data, list) else [data] if data is not None else []
-
-    validation_res = validator.validate_data_against_schema(schema_def.schema_content, data_list)
-    schema_def.validation = ValidationResult(**validation_res.model_dump())
-    logger.info("Schema inferred successfully with score %d", score_res.overall)
-
-    return schema_def
+    return await facade.infer_and_score(data)
 
 
 @router.post("/score")
 async def score_schema(
     json_schema: dict[str, Any] = Body(..., description="JSON Schema to score", alias="schema"),
-    ai_service: IAIService = Depends(get_ai_service),
+    facade: SchemaBuilderFacade = Depends(get_facade),
 ):
     logger.info("POST /schemas/score")
 
     if not json_schema:
         raise InputValidationError(message="Schema cannot be empty", field="schema")
 
-    scorer = ScoringEngine()
-    score_res = scorer.score(json_schema)
-
-    if settings.ENABLE_AI:
-        score_res.ai_score = await ai_service.evaluate_schema(json_schema)
-
-    logger.info("Schema scored: %d", score_res.overall)
-
-    return score_res
+    return facade.score_schema(json_schema)
 
 
 @router.post("/analyze", response_model=ConflictAnalysis)
@@ -158,6 +112,7 @@ def validate_data(
         ..., description="JSON Schema to validate against", alias="schema"
     ),
     data: list[Any] = Body(..., description="List of JSON objects to validate"),
+    facade: SchemaBuilderFacade = Depends(get_facade),
 ):
     logger.info("POST /schemas/validate - %d items", len(data) if data else 0)
 
@@ -167,16 +122,19 @@ def validate_data(
     if not data:
         raise InputValidationError(message="Data list cannot be empty", field="data")
 
-    validator = SchemaValidator()
-    validation_result = validator.validate_data_against_schema(json_schema, data)
+    validation_result = facade.validate_schema(json_schema, data)
     logger.info(
         "Validation complete: valid=%s, errors=%d",
         validation_result.valid,
         validation_result.total_errors,
     )
 
+    errors = validation_result.errors
+    if errors and hasattr(errors[0], "model_dump"):
+        errors = [error.model_dump() for error in errors]
+
     return {
         "valid": validation_result.valid,
         "total_errors": validation_result.total_errors,
-        "errors": [error.model_dump() for error in validation_result.errors],
+        "errors": errors,
     }

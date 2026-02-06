@@ -1,12 +1,12 @@
 from typing import Any, Dict, List
 
-from src.bl.analyzer.trees import TreeComparator
+from src.core.service_config import service_config
 from src.shared.models import GroupData, JsonStructure
 
 
 class Grouper:
     def __init__(self) -> None:
-        self.comparator = TreeComparator()
+        self.comparator = service_config.tree_comparator
 
     def group_by_containment(self, json_structures: List[JsonStructure]) -> List[GroupData]:
         groups: List[GroupData] = []

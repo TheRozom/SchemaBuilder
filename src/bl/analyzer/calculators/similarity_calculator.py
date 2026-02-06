@@ -1,12 +1,12 @@
 from typing import Any, Dict, List, Set
 
-from src.bl.analyzer.trees import TreeComparator
+from src.core.service_config import service_config
 from src.shared.models import JsonStructure
 
 
 class SimilarityCalculator:
     def __init__(self) -> None:
-        self.comparator = TreeComparator()
+        self.comparator = service_config.tree_comparator
 
     def calculate(self, json_structures: List[JsonStructure]) -> List[List[float]]:
         structure_count = len(json_structures)

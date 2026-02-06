@@ -1,44 +1,17 @@
-from typing import Any, Dict
-
-from src.bl.scoring.rules.base import BaseRule
+from src.bl.scoring.rules.base import BaseRule, RuleContext
 from src.shared.models import SchemaNode, SchemaType
 
 
 class CompletenessRule(BaseRule):
-    def evaluate(self, schema: Dict[str, Any]) -> float:
-        total_checks = 0
-        passed_checks = 0
+    def _evaluate_node(self, node: SchemaNode, context: RuleContext) -> None:
+        if node.type == SchemaType.INTEGER or node.type == SchemaType.NUMBER:
+            context.add_check(node.minimum is not None)
+            context.add_check(node.maximum is not None)
 
-        def visit(node: SchemaNode):
-            nonlocal total_checks, passed_checks
+        elif node.type == SchemaType.STRING:
+            context.add_check(node.minLength is not None)
+            context.add_check(node.maxLength is not None)
 
-            if node.type == SchemaType.INTEGER or node.type == SchemaType.NUMBER:
-                total_checks += 2
-
-                if node.minimum is not None:
-                    passed_checks += 1
-
-                if node.maximum is not None:
-                    passed_checks += 1
-
-            elif node.type == SchemaType.STRING:
-                total_checks += 2
-
-                if node.minLength is not None:
-                    passed_checks += 1
-
-                if node.maxLength is not None:
-                    passed_checks += 1
-
-            elif node.type == SchemaType.ARRAY:
-                total_checks += 2
-
-                if node.minItems is not None:
-                    passed_checks += 1
-
-                if node.maxItems is not None:
-                    passed_checks += 1
-
-        self._traverse_schema(schema, visit)
-
-        return passed_checks / total_checks if total_checks > 0 else 1.0
+        elif node.type == SchemaType.ARRAY:
+            context.add_check(node.minItems is not None)
+            context.add_check(node.maxItems is not None)

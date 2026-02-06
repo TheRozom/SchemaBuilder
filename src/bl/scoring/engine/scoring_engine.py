@@ -2,13 +2,8 @@ from typing import Any, Dict, Optional
 
 from pydantic import BaseModel
 
-from src.bl.scoring.config import ScoringWeights
-from src.bl.scoring.rules.ambiguity import AmbiguityRule
-from src.bl.scoring.rules.base import IRule
-from src.bl.scoring.rules.completeness import CompletenessRule
-from src.bl.scoring.rules.security import SecurityRule
-from src.bl.scoring.rules.strictness import StrictnessRule
 from src.core import get_logger
+from src.core.service_config import service_config
 from src.shared.exceptions import InputValidationError, ScoringError
 
 logger = get_logger(__name__)
@@ -25,55 +20,11 @@ class ScoreResult(BaseModel):
 
 
 class ScoringEngine:
-    """
-    Evaluates JSON Schema quality using weighted scoring rules.
-
-    The engine applies multiple rules (strictness, completeness, ambiguity, security)
-    to assess schema quality on a 0-100 scale. Each rule contributes a weighted score
-    to the final result. Security violations can force the total score to 0.
-
-    Attributes:
-        rules: Dictionary of scoring rules to evaluate
-        weights: Dictionary of weights for each rule (should sum to 1.0)
-        security_rule: Reference to SecurityRule for zero-score enforcement
-
-    Example:
-        >>> engine = ScoringEngine()
-        >>> result = engine.score({"type": "object", "properties": {...}})
-        >>> print(result.overall)  # 0-100 score
-    """
-
-    def __init__(
-        self,
-        rules: Optional[Dict[str, IRule]] = None,
-        weights: Optional[Dict[str, float]] = None,
-    ):
-        if rules is not None:
-            self.rules = rules
-            # Find the SecurityRule instance if present in the provided rules
-            self.security_rule = next(
-                (r for r in rules.values() if isinstance(r, SecurityRule)),
-                None,
-            )
-        else:
-            self.security_rule = SecurityRule()
-            self.rules: Dict[str, IRule] = {
-                "strictness": StrictnessRule(),
-                "completeness": CompletenessRule(),
-                "ambiguity": AmbiguityRule(),
-                "security": self.security_rule,
-            }
-
-        if weights is not None:
-            self.weights = weights
-        else:
-            scoring_weights = ScoringWeights()
-            self.weights = {
-                "strictness": scoring_weights.STRICTNESS,
-                "completeness": scoring_weights.COMPLETENESS,
-                "ambiguity": scoring_weights.AMBIGUITY,
-                "security": scoring_weights.SECURITY,
-            }
+    def __init__(self):
+        self.registry = service_config.scoring_rule_registry
+        self.rules = self.registry.get_enabled_rules()
+        self.weights = self.registry.get_weights()
+        self.security_rule = self.registry.get_security_rule()
         logger.debug("ScoringEngine initialized with %d rules", len(self.rules))
 
     def score(self, schema: Dict[str, Any]) -> ScoreResult:
