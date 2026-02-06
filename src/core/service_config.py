@@ -52,12 +52,12 @@ class ServiceConfig:
 
     @cached_property
     def scoring_rule_registry(self):
-        from src.bl.scoring.registry import ScoringRuleRegistry
-        from src.bl.scoring.rules.strictness import StrictnessRule
-        from src.bl.scoring.rules.completeness import CompletenessRule
-        from src.bl.scoring.rules.ambiguity import AmbiguityRule
-        from src.bl.scoring.rules.security import SecurityRule
         from src.bl.scoring.config import ScoringWeights
+        from src.bl.scoring.registry import ScoringRuleRegistry
+        from src.bl.scoring.rules.ambiguity import AmbiguityRule
+        from src.bl.scoring.rules.completeness import CompletenessRule
+        from src.bl.scoring.rules.security import SecurityRule
+        from src.bl.scoring.rules.strictness import StrictnessRule
 
         weights = ScoringWeights()
         registry = ScoringRuleRegistry()

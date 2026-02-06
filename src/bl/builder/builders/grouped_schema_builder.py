@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any
 
 from src.bl.analyzer import SchemaAnalyzer
 from src.bl.builder.inferrers import SchemaInferrer
@@ -20,8 +20,8 @@ class GroupedSchemaBuilder:
         self.normalizer = BoundNormalizer()
 
     async def build_schema(
-        self, data_list: List[Any]
-    ) -> Tuple[Dict[str, Any], Optional[AnalysisResult]]:
+        self, data_list: list[Any]
+    ) -> tuple[dict[str, Any], AnalysisResult | None]:
         if not data_list:
             raise InputValidationError(
                 message="Data list cannot be empty",
@@ -54,7 +54,7 @@ class GroupedSchemaBuilder:
 
                 return schema, analysis
 
-    def _build_merged_schema(self, data_list: List[Any]) -> Dict[str, Any]:
+    def _build_merged_schema(self, data_list: list[Any]) -> dict[str, Any]:
         self.inferrer.unknown_samples = {}
         merged_schema = None
 
@@ -90,7 +90,7 @@ class GroupedSchemaBuilder:
             return merged_schema.to_dict()
         return merged_schema
 
-    def _build_anyof_schema(self, data_list: List[Any], analysis: AnalysisResult) -> Dict[str, Any]:
+    def _build_anyof_schema(self, data_list: list[Any], analysis: AnalysisResult) -> dict[str, Any]:
         group_schemas = []
 
         for group in analysis.groups:

@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any
 
 from src.core import get_logger
 from src.core.config import settings
@@ -11,16 +11,16 @@ logger = get_logger(__name__)
 class SecurityRule:
     def __init__(self) -> None:
         self.score_zero: bool = False
-        self._issue_found: Optional[str] = None
+        self._issue_found: str | None = None
 
-    def evaluate(self, schema: Dict[str, Any]) -> float:
+    def evaluate(self, schema: dict[str, Any]) -> float:
         self.score_zero = False
         self._issue_found = None
         max_nesting = settings.SECURITY_MAX_NESTING_DEPTH
         max_string_len = settings.SECURITY_MAX_STRING_LENGTH
         max_int_digits = settings.SECURITY_MAX_INTEGER_DIGITS
 
-        def check_node(node_dict: Dict[str, Any], depth: int) -> Optional[bool]:
+        def check_node(node_dict: dict[str, Any], depth: int) -> bool | None:
             if not isinstance(node_dict, dict):
                 return None
 

@@ -1,5 +1,3 @@
-from typing import List
-
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -17,10 +15,10 @@ class Settings(BaseSettings):
     # SECURITY WARNING: Default CORS_ORIGINS allows all origins (["*"])
     # In production, set explicit origins via environment variable:
     # CORS_ORIGINS='["https://your-domain.com", "https://app.your-domain.com"]'
-    CORS_ORIGINS: List[str] = ["*"]
+    CORS_ORIGINS: list[str] = ["*"]
     CORS_ALLOW_CREDENTIALS: bool = True
-    CORS_ALLOW_METHODS: List[str] = ["*"]
-    CORS_ALLOW_HEADERS: List[str] = ["*"]
+    CORS_ALLOW_METHODS: list[str] = ["*"]
+    CORS_ALLOW_HEADERS: list[str] = ["*"]
     LOG_LEVEL: str = "INFO"
     model_config = SettingsConfigDict(env_file=".env")
 

@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any
 
 from src.bl.scoring.rules.base import BaseRule, RuleContext
 from src.shared.models import SchemaNode
@@ -21,7 +21,7 @@ class AmbiguityRuleContext(RuleContext):
 
 
 class AmbiguityRule(BaseRule):
-    def evaluate(self, schema: Dict[str, Any]) -> float:
+    def evaluate(self, schema: dict[str, Any]) -> float:
         context = AmbiguityRuleContext()
 
         def visit(node: SchemaNode):

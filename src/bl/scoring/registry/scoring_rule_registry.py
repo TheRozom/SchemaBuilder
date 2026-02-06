@@ -1,5 +1,3 @@
-from typing import Any, Dict, Optional
-
 from src.bl.scoring.rules.base import IRule
 from src.core import get_logger
 
@@ -15,8 +13,8 @@ class RuleRegistration:
 
 class ScoringRuleRegistry:
     def __init__(self):
-        self._rules: Dict[str, RuleRegistration] = {}
-        self._security_rule: Optional[IRule] = None
+        self._rules: dict[str, RuleRegistration] = {}
+        self._security_rule: IRule | None = None
         logger.debug("ScoringRuleRegistry initialized")
 
     def register(self, name: str, rule: IRule, weight: float, enabled: bool = True) -> None:
@@ -45,16 +43,16 @@ class ScoringRuleRegistry:
             self._rules[name].enabled = False
             logger.debug("Disabled rule '%s'", name)
 
-    def get_enabled_rules(self) -> Dict[str, IRule]:
+    def get_enabled_rules(self) -> dict[str, IRule]:
         return {name: reg.rule for name, reg in self._rules.items() if reg.enabled}
 
-    def get_all_rules(self) -> Dict[str, IRule]:
+    def get_all_rules(self) -> dict[str, IRule]:
         return {name: reg.rule for name, reg in self._rules.items()}
 
-    def get_weights(self) -> Dict[str, float]:
+    def get_weights(self) -> dict[str, float]:
         return {name: reg.weight for name, reg in self._rules.items() if reg.enabled}
 
-    def get_security_rule(self) -> Optional[IRule]:
+    def get_security_rule(self) -> IRule | None:
         return self._security_rule
 
     def is_enabled(self, name: str) -> bool:

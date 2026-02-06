@@ -1,4 +1,4 @@
-from typing import Any, List, Optional
+from typing import Any
 
 from src.core import get_logger
 from src.core.service_config import service_config
@@ -16,7 +16,7 @@ logger = get_logger(__name__)
 
 class SchemaAnalyzer:
     def __init__(self):
-        self.json_structures: List[JsonStructure] = []
+        self.json_structures: list[JsonStructure] = []
         self.tree_builder = service_config.tree_builder
         self.tree_comparator = service_config.tree_comparator
         self.grouper = service_config.grouper
@@ -24,7 +24,7 @@ class SchemaAnalyzer:
         self.summary_generator = service_config.summary_generator
         logger.debug("SchemaAnalyzer initialized")
 
-    def analyze_conflicts(self, data_list: List[Any]) -> AnalysisResult:
+    def analyze_conflicts(self, data_list: list[Any]) -> AnalysisResult:
         logger.info("Analyzing conflicts in %d objects", len(data_list))
 
         empty_result = self._validate_input(data_list)
@@ -49,7 +49,7 @@ class SchemaAnalyzer:
                 details={"item_count": len(data_list)},
             ) from e
 
-    def _validate_input(self, data_list: List[Any]) -> Optional[AnalysisResult]:
+    def _validate_input(self, data_list: list[Any]) -> AnalysisResult | None:
         if not data_list:
             logger.debug("Empty data list provided, returning empty result")
             return AnalysisResult(
@@ -78,7 +78,7 @@ class SchemaAnalyzer:
 
         return None
 
-    def _build_tree_structures(self, data_list: List[Any]) -> None:
+    def _build_tree_structures(self, data_list: list[Any]) -> None:
         self.json_structures = []
 
         for idx, item in enumerate(data_list):
@@ -94,8 +94,8 @@ class SchemaAnalyzer:
         logger.debug("Built %d tree structures", len(self.json_structures))
 
     def _create_structure_groups(
-        self, groups: List[Any], data_list: List[Any]
-    ) -> List[StructureGroup]:
+        self, groups: list[Any], data_list: list[Any]
+    ) -> list[StructureGroup]:
         empty_groups = [i for i, g in enumerate(groups) if not g.indices]
         if empty_groups:
             logger.warning(
@@ -119,9 +119,9 @@ class SchemaAnalyzer:
 
     def _build_analysis_result(
         self,
-        data_list: List[Any],
-        groups: List[Any],
-        similarity_matrix: List[List[float]],
+        data_list: list[Any],
+        groups: list[Any],
+        similarity_matrix: list[list[float]],
     ) -> AnalysisResult:
         structure_groups = self._create_structure_groups(groups, data_list)
 

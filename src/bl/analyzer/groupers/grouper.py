@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any
 
 from src.core.service_config import service_config
 from src.shared.models import GroupData, JsonStructure
@@ -8,8 +8,8 @@ class Grouper:
     def __init__(self) -> None:
         self.comparator = service_config.tree_comparator
 
-    def group_by_containment(self, json_structures: List[JsonStructure]) -> List[GroupData]:
-        groups: List[GroupData] = []
+    def group_by_containment(self, json_structures: list[JsonStructure]) -> list[GroupData]:
+        groups: list[GroupData] = []
         used_indices = set()
 
         for i, struct_i in enumerate(json_structures):
@@ -33,7 +33,7 @@ class Grouper:
     def _add_compatible_structures(
         self,
         group: GroupData,
-        json_structures: List[JsonStructure],
+        json_structures: list[JsonStructure],
         used_indices: set,
         start_index: int,
     ) -> GroupData:
@@ -47,7 +47,7 @@ class Grouper:
 
         return group
 
-    def _are_structures_compatible(self, tree_a: Dict[str, Any], tree_b: Dict[str, Any]) -> bool:
+    def _are_structures_compatible(self, tree_a: dict[str, Any], tree_b: dict[str, Any]) -> bool:
         return self.comparator.contains(tree_a, tree_b) or self.comparator.contains(tree_b, tree_a)
 
     def _merge_structure_into_group(

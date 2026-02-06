@@ -1,4 +1,4 @@
-from typing import Any, Dict, Protocol, runtime_checkable
+from typing import Any, Protocol, runtime_checkable
 
 from src.domain.models import SchemaDefinition
 
@@ -10,4 +10,4 @@ class ISchemaService(Protocol):
 
 @runtime_checkable
 class IAIService(Protocol):
-    async def evaluate_schema(self, schema: Dict[str, Any]) -> int | None: ...
+    async def evaluate_schema(self, schema: dict[str, Any]) -> int | None: ...

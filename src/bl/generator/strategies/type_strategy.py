@@ -1,10 +1,14 @@
 import random
-from typing import Any, Callable, Dict, List, Optional
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 
 from faker import Faker
 
 from src.bl.generator.config import get_default_ranges
 from src.bl.generator.strategies.base import ValueGenerationStrategy
+
+if TYPE_CHECKING:
+    from src.bl.generator.strategies.field_name_strategy import FieldNameStrategy
 
 
 class TypeStrategy(ValueGenerationStrategy):
@@ -12,8 +16,8 @@ class TypeStrategy(ValueGenerationStrategy):
         self,
         faker: Faker,
         field_name_strategy: "FieldNameStrategy" = None,
-        value_generator: Callable[[str, Dict[str, Any]], Any] = None,
-        record_generator: Callable[[Dict[str, Any]], Dict[str, Any]] = None,
+        value_generator: Callable[[str, dict[str, Any]], Any] = None,
+        record_generator: Callable[[dict[str, Any]], dict[str, Any]] = None,
     ):
         self.faker = faker
         self.field_name_strategy = field_name_strategy
@@ -21,10 +25,10 @@ class TypeStrategy(ValueGenerationStrategy):
         self._generate_value_cb = value_generator
         self._generate_record_cb = record_generator
 
-    def can_generate(self, field_name: str, field_schema: Dict[str, Any]) -> bool:
+    def can_generate(self, field_name: str, field_schema: dict[str, Any]) -> bool:
         return "type" in field_schema
 
-    def generate(self, field_name: str, field_schema: Dict[str, Any]) -> Any:
+    def generate(self, field_name: str, field_schema: dict[str, Any]) -> Any:
         field_type = field_schema.get("type")
 
         if field_type == "null":
@@ -44,7 +48,7 @@ class TypeStrategy(ValueGenerationStrategy):
 
         return None
 
-    def _generate_string(self, field_name: str, field_schema: Dict[str, Any]) -> str:
+    def _generate_string(self, field_name: str, field_schema: dict[str, Any]) -> str:
         min_len = field_schema.get("minLength", self._defaults.string_min_length)
         max_len = field_schema.get("maxLength", self._defaults.string_max_length)
 
@@ -64,7 +68,7 @@ class TypeStrategy(ValueGenerationStrategy):
 
         return value
 
-    def _generate_integer(self, field_schema: Dict[str, Any]) -> int:
+    def _generate_integer(self, field_schema: dict[str, Any]) -> int:
         minimum = field_schema.get("minimum", self._defaults.int_min)
         maximum = field_schema.get("maximum", self._defaults.int_max)
 
@@ -75,7 +79,7 @@ class TypeStrategy(ValueGenerationStrategy):
 
         return random.randint(minimum, maximum)
 
-    def _generate_number(self, field_schema: Dict[str, Any]) -> float:
+    def _generate_number(self, field_schema: dict[str, Any]) -> float:
         minimum = field_schema.get("minimum", self._defaults.float_min)
         maximum = field_schema.get("maximum", self._defaults.float_max)
 
@@ -86,7 +90,7 @@ class TypeStrategy(ValueGenerationStrategy):
 
         return round(random.uniform(minimum, maximum), 2)
 
-    def _generate_array(self, field_name: str, field_schema: Dict[str, Any]) -> List[Any]:
+    def _generate_array(self, field_name: str, field_schema: dict[str, Any]) -> list[Any]:
         items_schema = field_schema.get("items", {})
         min_items = field_schema.get("minItems", self._defaults.array_min_items)
         max_items = field_schema.get("maxItems", self._defaults.array_max_items)
@@ -104,7 +108,7 @@ class TypeStrategy(ValueGenerationStrategy):
 
         return [self.faker.word() for _ in range(length)]
 
-    def _generate_object(self, field_schema: Dict[str, Any]) -> Dict[str, Any]:
+    def _generate_object(self, field_schema: dict[str, Any]) -> dict[str, Any]:
         if self._generate_record_cb:
             return self._generate_record_cb(field_schema)
         return {}

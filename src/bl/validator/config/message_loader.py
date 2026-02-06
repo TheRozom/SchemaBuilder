@@ -1,5 +1,5 @@
 import threading
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from src.core import get_logger, load_yaml_config
 
@@ -8,7 +8,7 @@ logger = get_logger(__name__)
 
 class ErrorMessageLoader:
     _instance: Optional["ErrorMessageLoader"] = None
-    _messages: Dict[str, Any] = {}
+    _messages: dict[str, Any] = {}
     _lock: threading.Lock = threading.Lock()
 
     def __new__(cls) -> "ErrorMessageLoader":
@@ -25,7 +25,7 @@ class ErrorMessageLoader:
         # Atomic swap - readers see either old or new dict, never partial state
         self._messages = messages
 
-    def get_fix_template(self, validator: str) -> Optional[str]:
+    def get_fix_template(self, validator: str) -> str | None:
         # Read from local reference to avoid race conditions during reload
         messages = self._messages.get("messages", {})
         validator_config = messages.get(validator, {})

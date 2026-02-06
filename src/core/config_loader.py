@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any
 
 import yaml
 
@@ -13,14 +13,14 @@ CONFIG_DIR = Path(__file__).parent.parent.parent / "config"
 
 def load_yaml_config(
     filename: str,
-    config_dir: Optional[Path] = None,
-) -> Dict[str, Any]:
+    config_dir: Path | None = None,
+) -> dict[str, Any]:
     base_dir = config_dir or CONFIG_DIR
     config_path = base_dir / filename
     logger.debug("Loading config from %s", config_path)
 
     try:
-        with open(config_path, "r", encoding="utf-8") as f:
+        with open(config_path, encoding="utf-8") as f:
             data = yaml.safe_load(f)
             logger.debug("Successfully loaded config: %s", filename)
 

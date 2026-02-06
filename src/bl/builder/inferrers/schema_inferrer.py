@@ -1,4 +1,5 @@
-from typing import Any, Callable, Dict, List, Tuple
+from collections.abc import Callable
+from typing import Any
 
 from src.bl.builder.config import PATTERN_REGISTRY
 from src.bl.builder.mergers import SchemaMerger
@@ -21,12 +22,12 @@ logger = get_logger(__name__)
 
 class SchemaInferrer:
     def __init__(self):
-        self.unknown_samples: Dict[str, List[str]] = {}
+        self.unknown_samples: dict[str, list[str]] = {}
         self._type_handlers = self._build_type_registry()
 
     def _build_type_registry(
         self,
-    ) -> List[Tuple[Callable[[Any], bool], Callable[[Any, str], SchemaNode]]]:
+    ) -> list[tuple[Callable[[Any], bool], Callable[[Any, str], SchemaNode]]]:
         return [
             (is_none, self._handle_none),
             (is_bool, self._handle_bool),
@@ -90,7 +91,7 @@ class SchemaInferrer:
 
         return schema
 
-    def _infer_array(self, data: List[Any], path: str) -> SchemaNode:
+    def _infer_array(self, data: list[Any], path: str) -> SchemaNode:
         schema = SchemaNode(type=SchemaType.ARRAY, minItems=0, maxItems=len(data))
 
         if not data:
@@ -110,7 +111,7 @@ class SchemaInferrer:
 
         return schema
 
-    def _infer_object(self, data: Dict[str, Any], path: str) -> SchemaNode:
+    def _infer_object(self, data: dict[str, Any], path: str) -> SchemaNode:
         logger.debug("Inferring object schema at path '%s' with %d properties", path, len(data))
 
         return SchemaNode(

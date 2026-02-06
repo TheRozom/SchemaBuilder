@@ -1,8 +1,8 @@
-from typing import Any, Dict, List
+from typing import Any
 
 from pydantic import BaseModel
 
 
 class GroupData(BaseModel):
-    indices: List[int]
-    merged_tree: Dict[str, Any]
+    indices: list[int]
+    merged_tree: dict[str, Any]

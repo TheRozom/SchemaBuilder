@@ -1,4 +1,4 @@
-from typing import Any, List, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -13,17 +13,17 @@ class ValidationError(BaseModel):
         default="", description="Path in the schema where the constraint is defined"
     )
 
-    expected_type: Optional[str] = Field(default=None, description="Type expected by schema")
+    expected_type: str | None = Field(default=None, description="Type expected by schema")
     actual_type: str = Field(default="", description="Actual type of the value")
 
-    constraint_name: Optional[str] = Field(
+    constraint_name: str | None = Field(
         default=None,
         description="Name of the failed constraint (e.g., minLength, pattern)",
     )
-    constraint_value: Optional[Any] = Field(
+    constraint_value: Any | None = Field(
         default=None, description="Value of the constraint that failed"
     )
-    allowed_values: Optional[List[Any]] = Field(
+    allowed_values: list[Any] | None = Field(
         default=None, description="Allowed values if enum constraint failed"
     )
     fix_suggestion: str = Field(

@@ -1,5 +1,3 @@
-from typing import List
-
 from jsonschema import ValidationError as JsonSchemaValidationError
 
 from src.bl.validator.extractors import ConstraintExtractor
@@ -12,7 +10,7 @@ class ErrorFormatter:
         self._extractor = ConstraintExtractor()
         self._generator = FixSuggestionGenerator()
 
-    def format(self, idx: int, errors: List[JsonSchemaValidationError]) -> List[ValidationError]:
+    def format(self, idx: int, errors: list[JsonSchemaValidationError]) -> list[ValidationError]:
         formatted_errors = []
 
         for error in errors:

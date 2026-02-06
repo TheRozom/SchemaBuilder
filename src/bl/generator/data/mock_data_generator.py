@@ -1,5 +1,5 @@
 import random
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 from faker import Faker
 
@@ -16,7 +16,7 @@ from src.core import get_logger
 
 
 class MockDataGenerator:
-    def __init__(self, locale: str = "en_US", seed: Optional[int] = None):
+    def __init__(self, locale: str = "en_US", seed: int | None = None):
         self.faker = Faker(locale)
         self._defaults = get_default_ranges()
         self.logger = get_logger(__name__)
@@ -29,7 +29,7 @@ class MockDataGenerator:
 
     def _setup_strategies(self) -> None:
         field_name_strategy = FieldNameStrategy(self.faker)
-        self.strategies: List[ValueGenerationStrategy] = [
+        self.strategies: list[ValueGenerationStrategy] = [
             CompositionStrategy(self._generate_value),
             EnumStrategy(),
             PatternStrategy(self.faker),
@@ -43,8 +43,8 @@ class MockDataGenerator:
         ]
 
     def generate_from_schema(
-        self, schema: Dict[str, Any], count: int = 1
-    ) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
+        self, schema: dict[str, Any], count: int = 1
+    ) -> dict[str, Any] | list[dict[str, Any]]:
         if count < 1:
             raise ValueError("count must be at least 1")
         if count > 10000:
@@ -54,12 +54,12 @@ class MockDataGenerator:
             return self._generate_single_record(schema)
         return [self._generate_single_record(schema) for _ in range(count)]
 
-    def _resolve_top_level_composition(self, schema: Dict[str, Any]) -> Dict[str, Any]:
+    def _resolve_top_level_composition(self, schema: dict[str, Any]) -> dict[str, Any]:
         if "properties" in schema:
             return schema
 
         if "allOf" in schema:
-            merged: Dict[str, Any] = {}
+            merged: dict[str, Any] = {}
             for sub in schema["allOf"]:
                 for key, value in sub.items():
                     if key == "properties":
@@ -78,7 +78,7 @@ class MockDataGenerator:
 
         return schema
 
-    def _generate_single_record(self, schema: Dict[str, Any]) -> Dict[str, Any]:
+    def _generate_single_record(self, schema: dict[str, Any]) -> dict[str, Any]:
         schema = self._resolve_top_level_composition(schema)
         record = {}
         properties = schema.get("properties", {})
@@ -88,7 +88,7 @@ class MockDataGenerator:
 
         return record
 
-    def _generate_value(self, field_name: str, field_schema: Dict[str, Any]) -> Any:
+    def _generate_value(self, field_name: str, field_schema: dict[str, Any]) -> Any:
         if field_schema.get("type") == "null":
             return None
 
@@ -103,7 +103,7 @@ class MockDataGenerator:
         return self.faker.word()
 
     @staticmethod
-    def _null_is_possible(field_schema: Dict[str, Any]) -> bool:
+    def _null_is_possible(field_schema: dict[str, Any]) -> bool:
         for keyword in ("anyOf", "oneOf"):
             for sub in field_schema.get(keyword, []):
                 if sub.get("type") == "null":

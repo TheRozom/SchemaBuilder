@@ -1,16 +1,18 @@
 import inspect
 import json
 from functools import wraps
-from typing import Any, Dict, List
+from typing import Any
 
 from fastapi import Request
 from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
-    ValidationError as PydanticValidationError,
     field_validator,
     model_validator,
+)
+from pydantic import (
+    ValidationError as PydanticValidationError,
 )
 
 from src.shared import InputValidationError, ValidationException
@@ -19,18 +21,18 @@ from src.shared import InputValidationError, ValidationException
 class SchemaFieldMixin(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
-    json_schema: Dict[str, Any] = Field(..., alias="schema")
+    json_schema: dict[str, Any] = Field(..., alias="schema")
 
     @field_validator("json_schema")
     @classmethod
-    def schema_must_not_be_empty(cls, v: Dict[str, Any]) -> Dict[str, Any]:
+    def schema_must_not_be_empty(cls, v: dict[str, Any]) -> dict[str, Any]:
         if not v:
             raise InputValidationError(message="Schema cannot be empty", field="schema")
         return v
 
 
 class BuildSchemaRequest(BaseModel):
-    data: List[Any]
+    data: list[Any]
 
     @model_validator(mode="after")
     def validate_data(self) -> "BuildSchemaRequest":
@@ -50,7 +52,7 @@ class ScoreSchemaRequest(SchemaFieldMixin):
 
 
 class AnalyzeRequest(BaseModel):
-    data: List[Any]
+    data: list[Any]
 
     @model_validator(mode="after")
     def validate_data(self) -> "AnalyzeRequest":
@@ -60,7 +62,7 @@ class AnalyzeRequest(BaseModel):
 
 
 class ValidateRequest(SchemaFieldMixin):
-    data: List[Any]
+    data: list[Any]
 
     @model_validator(mode="after")
     def validate_data(self) -> "ValidateRequest":

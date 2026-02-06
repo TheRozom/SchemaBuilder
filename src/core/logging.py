@@ -1,6 +1,5 @@
 import logging
 import sys
-from typing import Optional
 
 
 class LoggerFactory:
@@ -13,8 +12,8 @@ class LoggerFactory:
     def configure(
         cls,
         level: int = logging.INFO,
-        log_format: Optional[str] = None,
-        date_format: Optional[str] = None,
+        log_format: str | None = None,
+        date_format: str | None = None,
     ) -> None:
         cls._log_level = level
 

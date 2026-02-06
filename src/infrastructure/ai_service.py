@@ -1,6 +1,6 @@
 import json
 import re
-from typing import Any, Optional
+from typing import Any
 
 import openai
 
@@ -26,7 +26,7 @@ class OpenAIService:
         else:
             logger.info("AI features disabled via ENABLE_AI setting")
 
-    async def evaluate_schema(self, schema: dict[str, Any]) -> Optional[int]:
+    async def evaluate_schema(self, schema: dict[str, Any]) -> int | None:
         if not self.client:
             return None
 
@@ -68,7 +68,7 @@ class OpenAIService:
 
             return None
 
-    async def _call_gpt(self, prompt: str) -> Optional[str]:
+    async def _call_gpt(self, prompt: str) -> str | None:
         try:
             response = await self.client.chat.completions.create(
                 model=settings.AI_MODEL,

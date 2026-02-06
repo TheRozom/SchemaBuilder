@@ -1,11 +1,11 @@
 """Functions for tree operations like merging and containment checking."""
 
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 def contains(
-    larger: Optional[Dict[str, Any]],
-    smaller: Optional[Dict[str, Any]],
+    larger: dict[str, Any] | None,
+    smaller: dict[str, Any] | None,
 ) -> bool:
     """Check if one tree structure is contained within another.
 
@@ -39,9 +39,9 @@ def contains(
 
 
 def merge(
-    tree1: Optional[Dict[str, Any]],
-    tree2: Optional[Dict[str, Any]],
-) -> Optional[Dict[str, Any]]:
+    tree1: dict[str, Any] | None,
+    tree2: dict[str, Any] | None,
+) -> dict[str, Any] | None:
     """Combine two tree structures into one.
 
     Recursively merges nested dictionaries. When both trees have the same key,

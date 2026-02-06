@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any
 
 from src.core import get_logger
 from src.shared.utils import (
@@ -13,7 +13,7 @@ logger = get_logger(__name__)
 
 
 class TreeBuilder:
-    def build(self, data: Any) -> Dict[str, Any]:
+    def build(self, data: Any) -> dict[str, Any]:
         logger.debug("Building tree from data type: %s", get_type_name(data))
 
         if is_dict(data):
@@ -21,7 +21,7 @@ class TreeBuilder:
 
         return {}
 
-    def _build_dict_tree(self, data: Dict[str, Any]) -> Dict[str, Any]:
+    def _build_dict_tree(self, data: dict[str, Any]) -> dict[str, Any]:
         tree = {}
 
         for key, value in data.items():
@@ -36,10 +36,10 @@ class TreeBuilder:
 
         return tree
 
-    def _build_nested_object(self, value: Dict[str, Any]) -> Dict[str, Any]:
+    def _build_nested_object(self, value: dict[str, Any]) -> dict[str, Any]:
         return self.build(value)
 
-    def _build_array_of_objects(self, items: List[Any]) -> Dict[str, Any]:
+    def _build_array_of_objects(self, items: list[Any]) -> dict[str, Any]:
         merged_tree = {}
 
         for item in items:
@@ -52,5 +52,5 @@ class TreeBuilder:
     def _build_leaf_node(self) -> None:
         return None
 
-    def count_nodes(self, tree: Dict[str, Any]) -> int:
+    def count_nodes(self, tree: dict[str, Any]) -> int:
         return tree_analysis.count_nodes(tree)

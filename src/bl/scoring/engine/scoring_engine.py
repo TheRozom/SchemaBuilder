@@ -1,4 +1,4 @@
-from typing import Any, Dict, Optional
+from typing import Any
 
 from pydantic import BaseModel
 
@@ -11,8 +11,8 @@ logger = get_logger(__name__)
 
 class ScoreResult(BaseModel):
     total_score: float
-    ai_score: Optional[int] = None
-    breakdown: Dict[str, float]
+    ai_score: int | None = None
+    breakdown: dict[str, float]
 
     @property
     def overall(self) -> int:
@@ -27,7 +27,7 @@ class ScoringEngine:
         self.security_rule = self.registry.get_security_rule()
         logger.debug("ScoringEngine initialized with %d rules", len(self.rules))
 
-    def score(self, schema: Dict[str, Any]) -> ScoreResult:
+    def score(self, schema: dict[str, Any]) -> ScoreResult:
         logger.debug("Scoring schema")
 
         if not isinstance(schema, dict):

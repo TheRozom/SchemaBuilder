@@ -1,12 +1,12 @@
 """Functions for analyzing tree structures (counting, path collection)."""
 
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 
 def collect_paths(
-    data: Dict[str, Any],
+    data: dict[str, Any],
     prefix: str = "",
-) -> List[str]:
+) -> list[str]:
     """Create a list of all paths in a nested dictionary.
 
     Paths are in dot notation (e.g., "user.address.city").
@@ -18,7 +18,7 @@ def collect_paths(
     Returns:
         List of dot-separated paths like ["person.age", "person.address.city"]
     """
-    paths: List[str] = []
+    paths: list[str] = []
 
     if not isinstance(data, dict):
         return paths
@@ -33,7 +33,7 @@ def collect_paths(
     return paths
 
 
-def count_nodes(tree: Optional[Dict[str, Any]]) -> int:
+def count_nodes(tree: dict[str, Any] | None) -> int:
     """Count how many keys exist in total (including nested ones).
 
     Args:
@@ -55,9 +55,9 @@ def count_nodes(tree: Optional[Dict[str, Any]]) -> int:
 
 
 def flatten(
-    tree: Optional[Dict[str, Any]],
+    tree: dict[str, Any] | None,
     prefix: str = "",
-) -> List[str]:
+) -> list[str]:
     """Create a sorted list of all paths in a tree.
 
     Similar to collect_paths but returns sorted results.
@@ -69,7 +69,7 @@ def flatten(
     Returns:
         Sorted list like ["address.city", "address.street", "name"]
     """
-    keys: List[str] = []
+    keys: list[str] = []
 
     if tree is None:
         return keys

@@ -38,3 +38,33 @@ build-backend = "poetry.core.masonry.api"
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "F",
+    "W",
+    "I",
+    "N",
+    "UP",
+    "B",
+    "A",
+    "C4",
+    "T20",
+    "SIM",
+]
+ignore = [
+    "E501",
+    "B008",
+    "N815",
+    "SIM102",
+    "SIM103",
+    "UP038",
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["src"]

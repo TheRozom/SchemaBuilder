@@ -1,12 +1,13 @@
 """Functions for traversing tree-like data structures."""
 
-from typing import Any, Callable, Dict, Optional
+from collections.abc import Callable
+from typing import Any
 
 from src.shared.enums import SchemaKeyword
 
 
 def traverse_dict(
-    data: Dict[str, Any],
+    data: dict[str, Any],
     callback: Callable[[str, Any, int], None],
     depth: int = 0,
 ) -> None:
@@ -28,8 +29,8 @@ def traverse_dict(
 
 
 def traverse_schema_node(
-    node: Dict[str, Any],
-    callback: Callable[[Dict[str, Any], int], Optional[bool]],
+    node: dict[str, Any],
+    callback: Callable[[dict[str, Any], int], bool | None],
     depth: int = 0,
 ) -> None:
     """Walk through a JSON Schema structure.

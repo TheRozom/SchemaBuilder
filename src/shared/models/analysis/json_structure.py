@@ -1,9 +1,9 @@
-from typing import Any, Dict
+from typing import Any
 
 from pydantic import BaseModel
 
 
 class JsonStructure(BaseModel):
     index: int
-    tree: Dict[str, Any]
+    tree: dict[str, Any]
     key_count: int

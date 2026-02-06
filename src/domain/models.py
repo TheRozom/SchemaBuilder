@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -9,7 +9,7 @@ class ValidationResult(BaseModel):
     valid: bool = Field(..., description="Whether all data validates against the schema")
     total_errors: int = Field(..., description="Total number of validation errors")
 
-    errors: List[Dict[str, Any]] = Field(
+    errors: list[dict[str, Any]] = Field(
         default_factory=list, description="List of validation errors"
     )
 
@@ -24,12 +24,12 @@ class ConflictAnalysis(BaseModel):
 
 
 class SchemaDefinition(BaseModel):
-    schema_content: Dict[str, Any] = Field(..., description="The generated JSON Schema")
+    schema_content: dict[str, Any] = Field(..., description="The generated JSON Schema")
 
-    score: Optional[ScoreResult] = Field(None, description="Quality score of the schema")
-    validation: Optional[ValidationResult] = Field(
+    score: ScoreResult | None = Field(None, description="Quality score of the schema")
+    validation: ValidationResult | None = Field(
         None, description="Validation results against input data"
     )
-    analysis: Optional[ConflictAnalysis] = Field(
+    analysis: ConflictAnalysis | None = Field(
         None, description="Structure analysis result (when built from multiple objects)"
     )

@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any
 
 from src.core import get_logger, load_yaml_config
 
@@ -23,33 +23,33 @@ class DefaultRanges:
     year_max: int
 
 
-def _load_config() -> Dict[str, Any]:
+def _load_config() -> dict[str, Any]:
     return load_yaml_config("semantic_types.yaml")
 
 
-def _load_pattern_generators() -> List[Dict[str, Any]]:
+def _load_pattern_generators() -> list[dict[str, Any]]:
     config = _load_config()
     pattern_generators = config.get("pattern_generators", [])
     logger.info("Loaded %d pattern generators from configuration", len(pattern_generators))
     return pattern_generators
 
 
-def _load_field_name_keywords() -> List[Dict[str, Any]]:
+def _load_field_name_keywords() -> list[dict[str, Any]]:
     config = _load_config()
     field_keywords = config.get("field_name_keywords", [])
     logger.info("Loaded %d field name keyword mappings from configuration", len(field_keywords))
     return field_keywords
 
 
-PATTERN_GENERATORS: List[Dict[str, Any]] = _load_pattern_generators()
-FIELD_NAME_KEYWORDS: List[Dict[str, Any]] = _load_field_name_keywords()
+PATTERN_GENERATORS: list[dict[str, Any]] = _load_pattern_generators()
+FIELD_NAME_KEYWORDS: list[dict[str, Any]] = _load_field_name_keywords()
 
 
-def get_pattern_generators() -> List[Dict[str, Any]]:
+def get_pattern_generators() -> list[dict[str, Any]]:
     return PATTERN_GENERATORS
 
 
-def get_field_name_keywords() -> List[Dict[str, Any]]:
+def get_field_name_keywords() -> list[dict[str, Any]]:
     return FIELD_NAME_KEYWORDS
 
 

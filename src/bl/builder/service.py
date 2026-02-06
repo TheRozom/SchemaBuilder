@@ -1,4 +1,4 @@
-from typing import Any, List, Optional, Tuple
+from typing import Any
 
 from src.core import get_logger
 from src.domain.models import SchemaDefinition
@@ -15,8 +15,8 @@ logger = get_logger(__name__)
 class SchemaBuilderService:
     def __init__(
         self,
-        inferrer: Optional[SchemaInferrer] = None,
-        grouped_builder: Optional[GroupedSchemaBuilder] = None,
+        inferrer: SchemaInferrer | None = None,
+        grouped_builder: GroupedSchemaBuilder | None = None,
     ):
         self.inferrer = inferrer or SchemaInferrer()
         self.grouped_builder = grouped_builder or GroupedSchemaBuilder()
@@ -56,8 +56,8 @@ class SchemaBuilderService:
             ) from e
 
     async def generate_schema_from_list(
-        self, data_list: List[Any]
-    ) -> Tuple[SchemaDefinition, Optional[AnalysisResult]]:
+        self, data_list: list[Any]
+    ) -> tuple[SchemaDefinition, AnalysisResult | None]:
         logger.info("Generating schema from %d data samples", len(data_list))
 
         try:

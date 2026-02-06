@@ -1,5 +1,3 @@
-import pytest
-
 from src.bl.builder.normalizers import BoundNormalizer
 from src.shared.models import SchemaNode, SchemaType
 

@@ -1,5 +1,5 @@
 import re
-from typing import Dict, Pattern
+from re import Pattern
 
 from src.core import get_logger, load_yaml_config
 from src.shared.exceptions import ConfigurationError
@@ -7,9 +7,9 @@ from src.shared.exceptions import ConfigurationError
 logger = get_logger(__name__)
 
 
-def _load_patterns_from_yaml() -> Dict[str, Pattern[str]]:
+def _load_patterns_from_yaml() -> dict[str, Pattern[str]]:
     config = load_yaml_config("patterns.yaml")
-    patterns: Dict[str, Pattern[str]] = {}
+    patterns: dict[str, Pattern[str]] = {}
 
     for pattern_name, pattern_config in config.get("patterns", {}).items():
         regex = pattern_config.get("regex", "")
@@ -52,4 +52,4 @@ def _load_patterns_from_yaml() -> Dict[str, Pattern[str]]:
     return patterns
 
 
-PATTERN_REGISTRY: Dict[str, Pattern[str]] = _load_patterns_from_yaml()
+PATTERN_REGISTRY: dict[str, Pattern[str]] = _load_patterns_from_yaml()

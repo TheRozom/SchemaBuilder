@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Set
+from typing import Any
 
 from src.core.service_config import service_config
 from src.shared.models import JsonStructure
@@ -8,7 +8,7 @@ class SimilarityCalculator:
     def __init__(self) -> None:
         self.comparator = service_config.tree_comparator
 
-    def calculate(self, json_structures: List[JsonStructure]) -> List[List[float]]:
+    def calculate(self, json_structures: list[JsonStructure]) -> list[list[float]]:
         structure_count = len(json_structures)
         similarity_matrix = self._initialize_matrix(structure_count)
 
@@ -25,11 +25,11 @@ class SimilarityCalculator:
 
         return similarity_matrix
 
-    def _initialize_matrix(self, size: int) -> List[List[float]]:
+    def _initialize_matrix(self, size: int) -> list[list[float]]:
         return [[0.0] * size for _ in range(size)]
 
     def _calculate_similarity(
-        self, first_tree: Dict[str, Any], second_tree: Dict[str, Any]
+        self, first_tree: dict[str, Any], second_tree: dict[str, Any]
     ) -> float:
         first_keys = set(self.comparator.flatten(first_tree))
         second_keys = set(self.comparator.flatten(second_tree))
@@ -45,18 +45,18 @@ class SimilarityCalculator:
 
         return self._calculate_partial_similarity(first_keys, second_keys)
 
-    def _both_empty(self, first_keys: Set[str], second_keys: Set[str]) -> bool:
+    def _both_empty(self, first_keys: set[str], second_keys: set[str]) -> bool:
         return not first_keys and not second_keys
 
-    def _one_empty(self, first_keys: Set[str], second_keys: Set[str]) -> bool:
+    def _one_empty(self, first_keys: set[str], second_keys: set[str]) -> bool:
         return not first_keys or not second_keys
 
-    def _has_containment(self, first_tree: Dict[str, Any], second_tree: Dict[str, Any]) -> bool:
+    def _has_containment(self, first_tree: dict[str, Any], second_tree: dict[str, Any]) -> bool:
         return self.comparator.contains(first_tree, second_tree) or self.comparator.contains(
             second_tree, first_tree
         )
 
-    def _calculate_partial_similarity(self, first_keys: Set[str], second_keys: Set[str]) -> float:
+    def _calculate_partial_similarity(self, first_keys: set[str], second_keys: set[str]) -> float:
         intersection_count = len(first_keys & second_keys)
         smaller_key_count = min(len(first_keys), len(second_keys))
         if smaller_key_count == 0:

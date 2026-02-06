@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any
 
 from jsonschema import Draft7Validator, SchemaError
 from jsonschema.exceptions import _WrappedReferencingError
@@ -17,7 +17,7 @@ class SchemaValidator:
         logger.debug("SchemaValidator initialized")
 
     def validate_data_against_schema(
-        self, schema: Dict[str, Any], data_list: List[Any]
+        self, schema: dict[str, Any], data_list: list[Any]
     ) -> ValidationResult:
         logger.info("Validating %d objects against schema", len(data_list))
 
@@ -31,7 +31,7 @@ class SchemaValidator:
                 path=str(e.path) if e.path else None,
             ) from e
 
-        all_errors: List[ValidationError] = []
+        all_errors: list[ValidationError] = []
         valid_count = 0
 
         for idx, item in enumerate(data_list):
@@ -62,5 +62,5 @@ class SchemaValidator:
 
         return ValidationResult(valid=is_valid, total_errors=len(all_errors), errors=all_errors)
 
-    def validate_single(self, schema: Dict[str, Any], data: Any) -> ValidationResult:
+    def validate_single(self, schema: dict[str, Any], data: Any) -> ValidationResult:
         return self.validate_data_against_schema(schema, [data])

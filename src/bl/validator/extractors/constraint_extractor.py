@@ -1,4 +1,4 @@
-from typing import Any, List, Optional
+from typing import Any
 
 from jsonschema import ValidationError as JsonSchemaValidationError
 
@@ -51,7 +51,7 @@ class ConstraintExtractor:
         SchemaKeyword.TYPE,
     ]
 
-    def get_expected_type(self, error: JsonSchemaValidationError) -> Optional[str]:
+    def get_expected_type(self, error: JsonSchemaValidationError) -> str | None:
         schema = error.schema
 
         if isinstance(schema, dict):
@@ -86,7 +86,7 @@ class ConstraintExtractor:
 
         return None
 
-    def _extract_types_from_any_of(self, any_of_schema: List[Any]) -> List[str]:
+    def _extract_types_from_any_of(self, any_of_schema: list[Any]) -> list[str]:
         types = []
 
         for option in any_of_schema:
@@ -95,13 +95,13 @@ class ConstraintExtractor:
 
         return types
 
-    def get_constraint_name(self, error: JsonSchemaValidationError) -> Optional[str]:
+    def get_constraint_name(self, error: JsonSchemaValidationError) -> str | None:
         if error.validator in self.CONSTRAINT_VALIDATORS:
             return error.validator
 
         return None
 
-    def get_constraint_value(self, error: JsonSchemaValidationError) -> Optional[Any]:
+    def get_constraint_value(self, error: JsonSchemaValidationError) -> Any | None:
         if error.validator in self.NUMERIC_VALIDATORS:
             return error.validator_value
 
@@ -110,7 +110,7 @@ class ConstraintExtractor:
 
         return None
 
-    def get_allowed_values(self, error: JsonSchemaValidationError) -> Optional[List[Any]]:
+    def get_allowed_values(self, error: JsonSchemaValidationError) -> list[Any] | None:
         if error.validator == SchemaKeyword.ENUM:
             return error.validator_value
 

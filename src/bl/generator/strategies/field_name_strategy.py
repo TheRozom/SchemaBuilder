@@ -1,5 +1,5 @@
 import random
-from typing import Any, Dict, Optional
+from typing import Any
 
 from faker import Faker
 
@@ -12,10 +12,10 @@ class FieldNameStrategy(ValueGenerationStrategy):
         self.faker = faker
         self._defaults = get_default_ranges()
 
-    def can_generate(self, field_name: str, field_schema: Dict[str, Any]) -> bool:
+    def can_generate(self, field_name: str, field_schema: dict[str, Any]) -> bool:
         return True
 
-    def generate(self, field_name: str, field_schema: Dict[str, Any]) -> Optional[Any]:
+    def generate(self, field_name: str, field_schema: dict[str, Any]) -> Any | None:
         field_lower = field_name.lower()
 
         for config in get_field_name_keywords():

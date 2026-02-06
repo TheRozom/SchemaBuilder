@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any
 
 import pytest
 
@@ -276,7 +276,7 @@ class TestTreeBuilder:
         assert tree["tags"] is None
 
     def test_build_tree_from_empty_object(self, builder: TreeBuilder):
-        data: Dict[str, Any] = {}
+        data: dict[str, Any] = {}
         tree = builder.build(data)
         assert tree == {}
 
@@ -307,7 +307,7 @@ class TestTreeBuilder:
         assert count == 5
 
     def test_count_nodes_empty_tree(self, builder: TreeBuilder):
-        tree: Dict[str, Any] = {}
+        tree: dict[str, Any] = {}
         count = builder.count_nodes(tree)
         assert count == 0
 

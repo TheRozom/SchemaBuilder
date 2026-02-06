@@ -1,4 +1,4 @@
-from typing import Any, Dict, Union
+from typing import Any
 
 from src.shared.models import SchemaKeyword, SchemaNode, SchemaType
 
@@ -63,8 +63,8 @@ class SchemaMerger:
 
     def _merge_same_type(
         self,
-        first_schema: Union[SchemaNode, Dict[str, Any]],
-        second_schema: Union[SchemaNode, Dict[str, Any]],
+        first_schema: SchemaNode | dict[str, Any],
+        second_schema: SchemaNode | dict[str, Any],
     ) -> SchemaNode:
         """
         Merge two schemas of the same type into a more permissive schema.
@@ -197,12 +197,16 @@ class SchemaMerger:
         first_items_node = (
             first_items
             if isinstance(first_items, SchemaNode)
-            else SchemaNode(**first_items) if first_items else SchemaNode()
+            else SchemaNode(**first_items)
+            if first_items
+            else SchemaNode()
         )
         second_items_node = (
             second_items
             if isinstance(second_items, SchemaNode)
-            else SchemaNode(**second_items) if second_items else SchemaNode()
+            else SchemaNode(**second_items)
+            if second_items
+            else SchemaNode()
         )
 
         return SchemaNode(

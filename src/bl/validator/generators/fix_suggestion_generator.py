@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from jsonschema import ValidationError as JsonSchemaValidationError
 
@@ -13,11 +13,11 @@ class FixSuggestionGenerator:
         self,
         error: JsonSchemaValidationError,
         path: str,
-        expected_type: Optional[str],
+        expected_type: str | None,
         actual_type: str,
-        constraint_name: Optional[str],
-        constraint_value: Optional[Any],
-        allowed_values: Optional[List[Any]],
+        constraint_name: str | None,
+        constraint_value: Any | None,
+        allowed_values: list[Any] | None,
     ) -> str:
         validator = error.validator
         value = error.instance
@@ -45,12 +45,12 @@ class FixSuggestionGenerator:
         error: JsonSchemaValidationError,
         path: str,
         value: Any,
-        expected_type: Optional[str],
+        expected_type: str | None,
         actual_type: str,
-        constraint_value: Optional[Any],
-        allowed_values: Optional[List[Any]],
+        constraint_value: Any | None,
+        allowed_values: list[Any] | None,
         validator: str,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         context = {
             "path": path,
             "value": value,
@@ -69,7 +69,7 @@ class FixSuggestionGenerator:
 
         return context
 
-    def _add_length_context(self, context: Dict[str, Any], value: Any) -> None:
+    def _add_length_context(self, context: dict[str, Any], value: Any) -> None:
         if isinstance(value, (str, list)):
             context["actual_length"] = len(value)
 
@@ -77,7 +77,7 @@ class FixSuggestionGenerator:
             context["actual_length"] = len(str(value)) if value else 0
 
     def _add_required_context(
-        self, context: Dict[str, Any], error: JsonSchemaValidationError
+        self, context: dict[str, Any], error: JsonSchemaValidationError
     ) -> None:
         missing_prop = self._message_loader.get_default("default_property")
 
@@ -89,14 +89,14 @@ class FixSuggestionGenerator:
 
         context["missing_prop"] = missing_prop
 
-    def _add_property_context(self, context: Dict[str, Any], path: str) -> None:
+    def _add_property_context(self, context: dict[str, Any], path: str) -> None:
         if path != "(root)":
             context["prop_name"] = path.split(".")[-1]
 
         else:
             context["prop_name"] = self._message_loader.get_default("unknown_property")
 
-    def _format_template(self, template: str, context: Dict[str, Any]) -> str:
+    def _format_template(self, template: str, context: dict[str, Any]) -> str:
         try:
             return template.format(**context)
 

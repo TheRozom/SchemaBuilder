@@ -1,5 +1,5 @@
 import random
-from typing import Any, Dict, Optional
+from typing import Any
 
 from faker import Faker
 
@@ -14,10 +14,10 @@ class PatternStrategy(ValueGenerationStrategy):
     def __init__(self, faker: Faker):
         self.faker = faker
 
-    def can_generate(self, field_name: str, field_schema: Dict[str, Any]) -> bool:
+    def can_generate(self, field_name: str, field_schema: dict[str, Any]) -> bool:
         return "pattern" in field_schema and field_schema["pattern"]
 
-    def generate(self, field_name: str, field_schema: Dict[str, Any]) -> Optional[Any]:
+    def generate(self, field_name: str, field_schema: dict[str, Any]) -> Any | None:
         pattern = field_schema.get("pattern")
         if not pattern:
             return None
@@ -32,7 +32,7 @@ class PatternStrategy(ValueGenerationStrategy):
 
         return None
 
-    def _generate_by_regex(self, pattern: str) -> Optional[str]:
+    def _generate_by_regex(self, pattern: str) -> str | None:
         try:
             if hasattr(self.faker, "regex"):
                 return self.faker.regex(pattern)
@@ -40,7 +40,7 @@ class PatternStrategy(ValueGenerationStrategy):
             logger.debug("Failed to generate from regex pattern '%s': %s", pattern, e)
         return None
 
-    def _generate_by_pattern(self, pattern: str) -> Optional[Any]:
+    def _generate_by_pattern(self, pattern: str) -> Any | None:
         for config in get_pattern_generators():
             if config.get("pattern") == pattern:
                 generator = config.get("generator")

@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from src.bl.scoring.engine.scoring_engine import ScoreResult, ScoringEngine
 from src.bl.validator import SchemaValidator
@@ -15,14 +15,14 @@ logger = get_logger(__name__)
 
 
 class SchemaBuilderFacade:
-    def __init__(self, schema_service: ISchemaService, ai_service: Optional[IAIService] = None):
+    def __init__(self, schema_service: ISchemaService, ai_service: IAIService | None = None):
         self.schema_service = schema_service
         self.ai_service = ai_service
         self.scorer = ScoringEngine()
         self.validator = SchemaValidator()
 
     async def build_schema_from_list(
-        self, data_list: List[Any], enable_ai: bool = None
+        self, data_list: list[Any], enable_ai: bool = None
     ) -> SchemaDefinition:
         if enable_ai is None:
             enable_ai = settings.ENABLE_AI
@@ -60,7 +60,7 @@ class SchemaBuilderFacade:
         return schema_def
 
     async def _enrich_schema(
-        self, schema_def: SchemaDefinition, data: List[Any], enable_ai: bool = False
+        self, schema_def: SchemaDefinition, data: list[Any], enable_ai: bool = False
     ) -> SchemaDefinition:
         score_res = self.scorer.score(schema_def.schema_content)
 
@@ -81,9 +81,9 @@ class SchemaBuilderFacade:
 
         return schema_def
 
-    def score_schema(self, schema: Dict[str, Any]) -> ScoreResult:
+    def score_schema(self, schema: dict[str, Any]) -> ScoreResult:
         return self.scorer.score(schema)
 
-    def validate_schema(self, schema: Dict[str, Any], data: List[Any]) -> ValidationResult:
+    def validate_schema(self, schema: dict[str, Any], data: list[Any]) -> ValidationResult:
         result = self.validator.validate_data_against_schema(schema, data)
         return ValidationResult(**result.model_dump())

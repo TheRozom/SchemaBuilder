@@ -1,5 +1,3 @@
-from typing import List
-
 from src.core import load_yaml_config
 from src.shared.models import AnalysisSummary, ConfidenceLevel, GroupData
 
@@ -9,7 +7,7 @@ class SummaryGenerator:
         self.config = load_yaml_config("summary_thresholds.yaml")
 
     def generate(
-        self, total: int, groups: List[GroupData], similarity: List[List[float]]
+        self, total: int, groups: list[GroupData], similarity: list[list[float]]
     ) -> AnalysisSummary:
         unique_count = len(groups)
         thresholds = self.config["summary_thresholds"]

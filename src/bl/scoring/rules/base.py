@@ -1,12 +1,13 @@
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Dict, Protocol, runtime_checkable
+from collections.abc import Callable
+from typing import Any, Protocol, runtime_checkable
 
 from src.shared.models import SchemaNode
 
 
 @runtime_checkable
 class IRule(Protocol):
-    def evaluate(self, schema: Dict[str, Any]) -> float: ...
+    def evaluate(self, schema: dict[str, Any]) -> float: ...
 
 
 class RuleContext:
@@ -24,7 +25,7 @@ class RuleContext:
 
 
 class BaseRule(ABC):
-    def evaluate(self, schema: Dict[str, Any]) -> float:
+    def evaluate(self, schema: dict[str, Any]) -> float:
         context = RuleContext()
 
         def visit(node: SchemaNode):
@@ -40,7 +41,7 @@ class BaseRule(ABC):
 
     def _traverse_schema(
         self,
-        node_dict: Dict[str, Any],
+        node_dict: dict[str, Any],
         visit: Callable[[SchemaNode], None],
     ) -> None:
         if not isinstance(node_dict, dict):

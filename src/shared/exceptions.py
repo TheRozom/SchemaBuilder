@@ -1,17 +1,17 @@
-from typing import Any, Dict, Optional
+from typing import Any
 
 
 class SchemaBuilderError(Exception):
     def __init__(
         self,
         message: str,
-        details: Optional[Dict[str, Any]] = None,
+        details: dict[str, Any] | None = None,
     ) -> None:
         self.message = message
         self.details = details or {}
         super().__init__(self.message)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "error": self.__class__.__name__,
             "message": self.message,
@@ -23,17 +23,17 @@ class ValidationError(SchemaBuilderError):
     def __init__(
         self,
         message: str,
-        path: Optional[str] = None,
-        expected: Optional[Any] = None,
-        actual: Optional[Any] = None,
-        details: Optional[Dict[str, Any]] = None,
+        path: str | None = None,
+        expected: Any | None = None,
+        actual: Any | None = None,
+        details: dict[str, Any] | None = None,
     ) -> None:
         self.path = path
         self.expected = expected
         self.actual = actual
         super().__init__(message, details)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         result = super().to_dict()
 
         if self.path:
@@ -52,13 +52,13 @@ class ConfigurationError(SchemaBuilderError):
     def __init__(
         self,
         message: str,
-        config_file: Optional[str] = None,
-        details: Optional[Dict[str, Any]] = None,
+        config_file: str | None = None,
+        details: dict[str, Any] | None = None,
     ) -> None:
         self.config_file = config_file
         super().__init__(message, details)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         result = super().to_dict()
 
         if self.config_file:
@@ -71,13 +71,13 @@ class AnalysisError(SchemaBuilderError):
     def __init__(
         self,
         message: str,
-        operation: Optional[str] = None,
-        details: Optional[Dict[str, Any]] = None,
+        operation: str | None = None,
+        details: dict[str, Any] | None = None,
     ) -> None:
         self.operation = operation
         super().__init__(message, details)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         result = super().to_dict()
 
         if self.operation:
@@ -90,15 +90,15 @@ class SchemaInferenceError(SchemaBuilderError):
     def __init__(
         self,
         message: str,
-        data_type: Optional[str] = None,
-        path: Optional[str] = None,
-        details: Optional[Dict[str, Any]] = None,
+        data_type: str | None = None,
+        path: str | None = None,
+        details: dict[str, Any] | None = None,
     ) -> None:
         self.data_type = data_type
         self.path = path
         super().__init__(message, details)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         result = super().to_dict()
 
         if self.data_type:
@@ -114,13 +114,13 @@ class ScoringError(SchemaBuilderError):
     def __init__(
         self,
         message: str,
-        rule_name: Optional[str] = None,
-        details: Optional[Dict[str, Any]] = None,
+        rule_name: str | None = None,
+        details: dict[str, Any] | None = None,
     ) -> None:
         self.rule_name = rule_name
         super().__init__(message, details)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         result = super().to_dict()
 
         if self.rule_name:
@@ -133,13 +133,13 @@ class AIServiceError(SchemaBuilderError):
     def __init__(
         self,
         message: str,
-        operation: Optional[str] = None,
-        details: Optional[Dict[str, Any]] = None,
+        operation: str | None = None,
+        details: dict[str, Any] | None = None,
     ) -> None:
         self.operation = operation
         super().__init__(message, details)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         result = super().to_dict()
 
         if self.operation:
@@ -152,15 +152,15 @@ class InputValidationError(SchemaBuilderError):
     def __init__(
         self,
         message: str,
-        field: Optional[str] = None,
-        expected_type: Optional[str] = None,
-        details: Optional[Dict[str, Any]] = None,
+        field: str | None = None,
+        expected_type: str | None = None,
+        details: dict[str, Any] | None = None,
     ) -> None:
         self.field = field
         self.expected_type = expected_type
         super().__init__(message, details)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         result = super().to_dict()
 
         if self.field:

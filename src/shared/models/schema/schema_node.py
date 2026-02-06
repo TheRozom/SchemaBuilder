@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Union
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -7,36 +7,36 @@ from src.shared.enums import SchemaType
 
 class SchemaNode(BaseModel):
     model_config = ConfigDict(extra="allow")
-    type: Optional[SchemaType] = None
-    pattern: Optional[str] = None
-    minLength: Optional[int] = None
-    maxLength: Optional[int] = None
-    format: Optional[str] = None
-    minimum: Optional[Union[int, float]] = None
-    maximum: Optional[Union[int, float]] = None
-    exclusiveMinimum: Optional[Union[int, float]] = None
-    exclusiveMaximum: Optional[Union[int, float]] = None
-    multipleOf: Optional[Union[int, float]] = None
-    items: Optional[Union[Dict[str, Any], "SchemaNode"]] = None
-    minItems: Optional[int] = None
-    maxItems: Optional[int] = None
-    uniqueItems: Optional[bool] = None
-    properties: Dict[str, Union[Dict[str, Any], "SchemaNode"]] = Field(default_factory=dict)
-    additionalProperties: Optional[bool] = None
-    required: List[str] = Field(default_factory=list)
-    anyOf: List[Union[Dict[str, Any], "SchemaNode"]] = Field(default_factory=list)
+    type: SchemaType | None = None
+    pattern: str | None = None
+    minLength: int | None = None
+    maxLength: int | None = None
+    format: str | None = None
+    minimum: int | float | None = None
+    maximum: int | float | None = None
+    exclusiveMinimum: int | float | None = None
+    exclusiveMaximum: int | float | None = None
+    multipleOf: int | float | None = None
+    items: Union[dict[str, Any], "SchemaNode"] | None = None
+    minItems: int | None = None
+    maxItems: int | None = None
+    uniqueItems: bool | None = None
+    properties: dict[str, Union[dict[str, Any], "SchemaNode"]] = Field(default_factory=dict)
+    additionalProperties: bool | None = None
+    required: list[str] = Field(default_factory=list)
+    anyOf: list[Union[dict[str, Any], "SchemaNode"]] = Field(default_factory=list)
 
-    oneOf: List[Union[Dict[str, Any], "SchemaNode"]] = Field(default_factory=list)
+    oneOf: list[Union[dict[str, Any], "SchemaNode"]] = Field(default_factory=list)
 
-    allOf: List[Union[Dict[str, Any], "SchemaNode"]] = Field(default_factory=list)
+    allOf: list[Union[dict[str, Any], "SchemaNode"]] = Field(default_factory=list)
 
-    title: Optional[str] = None
-    description: Optional[str] = None
-    default: Optional[Any] = None
-    enum: Optional[List[Any]] = None
-    const: Optional[Any] = None
+    title: str | None = None
+    description: str | None = None
+    default: Any | None = None
+    enum: list[Any] | None = None
+    const: Any | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         result = {}
 
         for field_name, field_value in self:
