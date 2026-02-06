@@ -1,5 +1,5 @@
 import random
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 from faker import Faker
 
@@ -8,10 +8,18 @@ from src.bl.generator.strategies.base import ValueGenerationStrategy
 
 
 class TypeStrategy(ValueGenerationStrategy):
-    def __init__(self, faker: Faker, field_name_strategy: "FieldNameStrategy" = None):
+    def __init__(
+        self,
+        faker: Faker,
+        field_name_strategy: "FieldNameStrategy" = None,
+        value_generator: Callable[[str, Dict[str, Any]], Any] = None,
+        record_generator: Callable[[Dict[str, Any]], Dict[str, Any]] = None,
+    ):
         self.faker = faker
         self.field_name_strategy = field_name_strategy
         self._defaults = get_default_ranges()
+        self._generate_value_cb = value_generator
+        self._generate_record_cb = record_generator
 
     def can_generate(self, field_name: str, field_schema: Dict[str, Any]) -> bool:
         return "type" in field_schema
@@ -84,26 +92,19 @@ class TypeStrategy(ValueGenerationStrategy):
         max_items = field_schema.get("maxItems", self._defaults.array_max_items)
         length = random.randint(min_items, max_items)
 
-        if isinstance(items_schema, dict):
-            from src.bl.generator.data.mock_data_generator import MockDataGenerator
-
-            generator = MockDataGenerator()
+        if isinstance(items_schema, dict) and self._generate_value_cb:
             return [
-                generator._generate_value(f"{field_name}_item", items_schema) for _ in range(length)
+                self._generate_value_cb(f"{field_name}_item", items_schema) for _ in range(length)
             ]
-        elif isinstance(items_schema, list):
-            from src.bl.generator.data.mock_data_generator import MockDataGenerator
-
-            generator = MockDataGenerator()
+        elif isinstance(items_schema, list) and self._generate_value_cb:
             return [
-                generator._generate_value(f"{field_name}_item_{i}", s)
+                self._generate_value_cb(f"{field_name}_item_{i}", s)
                 for i, s in enumerate(items_schema[:length])
             ]
 
         return [self.faker.word() for _ in range(length)]
 
     def _generate_object(self, field_schema: Dict[str, Any]) -> Dict[str, Any]:
-        from src.bl.generator.data.mock_data_generator import MockDataGenerator
-
-        generator = MockDataGenerator()
-        return generator._generate_single_record(field_schema)
+        if self._generate_record_cb:
+            return self._generate_record_cb(field_schema)
+        return {}

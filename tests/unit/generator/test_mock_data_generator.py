@@ -164,3 +164,166 @@ class TestMockDataGenerator:
         }
         result = generator.generate_from_schema(schema, count=1)
         assert isinstance(result["value"], str)
+
+    def test_generate_property_anyof_picks_valid_type(self, generator):
+        schema = {
+            "type": "object",
+            "properties": {"value": {"anyOf": [{"type": "string"}, {"type": "integer"}]}},
+        }
+        results = generator.generate_from_schema(schema, count=20)
+        for record in results:
+            assert isinstance(record["value"], (str, int))
+
+    def test_generate_property_oneof_picks_valid_type(self, generator):
+        schema = {
+            "type": "object",
+            "properties": {"value": {"oneOf": [{"type": "string"}, {"type": "boolean"}]}},
+        }
+        results = generator.generate_from_schema(schema, count=20)
+        for record in results:
+            assert isinstance(record["value"], (str, bool))
+
+    def test_generate_property_allof_merges_constraints(self, generator):
+        schema = {
+            "type": "object",
+            "properties": {
+                "value": {
+                    "allOf": [
+                        {"type": "integer", "minimum": 0},
+                        {"maximum": 100},
+                    ]
+                }
+            },
+        }
+        results = generator.generate_from_schema(schema, count=20)
+        for record in results:
+            assert isinstance(record["value"], int)
+            assert 0 <= record["value"] <= 100
+
+    def test_generate_anyof_randomness(self):
+        gen = MockDataGenerator()
+        schema = {
+            "type": "object",
+            "properties": {"value": {"anyOf": [{"type": "string"}, {"type": "integer"}]}},
+        }
+        results = gen.generate_from_schema(schema, count=50)
+        types_seen = {type(r["value"]) for r in results}
+        assert len(types_seen) > 1
+
+    def test_generate_anyof_with_null(self):
+        gen = MockDataGenerator()
+        schema = {
+            "type": "object",
+            "properties": {"value": {"anyOf": [{"type": "string"}, {"type": "null"}]}},
+        }
+        results = gen.generate_from_schema(schema, count=50)
+        has_none = any(r["value"] is None for r in results)
+        has_str = any(isinstance(r["value"], str) for r in results)
+        assert has_none and has_str
+
+    def test_generate_top_level_anyof(self):
+        gen = MockDataGenerator()
+        schema = {
+            "anyOf": [
+                {
+                    "type": "object",
+                    "properties": {"name": {"type": "string"}},
+                },
+                {
+                    "type": "object",
+                    "properties": {"age": {"type": "integer"}},
+                },
+            ]
+        }
+        results = gen.generate_from_schema(schema, count=50)
+        has_name = any("name" in r for r in results)
+        has_age = any("age" in r for r in results)
+        assert has_name and has_age
+
+    def test_generate_top_level_allof(self, generator):
+        schema = {
+            "allOf": [
+                {
+                    "type": "object",
+                    "properties": {"name": {"type": "string"}},
+                },
+                {
+                    "type": "object",
+                    "properties": {"age": {"type": "integer"}},
+                },
+            ]
+        }
+        result = generator.generate_from_schema(schema, count=1)
+        assert "name" in result
+        assert "age" in result
+        assert isinstance(result["name"], str)
+        assert isinstance(result["age"], int)
+
+    def test_generate_array_items_with_anyof(self, generator):
+        schema = {
+            "type": "object",
+            "properties": {
+                "items": {
+                    "type": "array",
+                    "items": {"anyOf": [{"type": "string"}, {"type": "integer"}]},
+                    "minItems": 5,
+                    "maxItems": 5,
+                }
+            },
+        }
+        result = generator.generate_from_schema(schema, count=1)
+        assert isinstance(result["items"], list)
+        assert len(result["items"]) == 5
+        for item in result["items"]:
+            assert isinstance(item, (str, int))
+
+    def test_generate_nested_object_with_anyof(self, generator):
+        schema = {
+            "type": "object",
+            "properties": {
+                "wrapper": {
+                    "type": "object",
+                    "properties": {"value": {"anyOf": [{"type": "string"}, {"type": "integer"}]}},
+                }
+            },
+        }
+        result = generator.generate_from_schema(schema, count=1)
+        assert isinstance(result["wrapper"], dict)
+        assert isinstance(result["wrapper"]["value"], (str, int))
+
+    def test_seed_propagation_in_arrays(self):
+        schema = {
+            "type": "object",
+            "properties": {
+                "tags": {
+                    "type": "array",
+                    "items": {"type": "integer", "minimum": 0, "maximum": 1000},
+                    "minItems": 3,
+                    "maxItems": 3,
+                }
+            },
+        }
+        gen1 = MockDataGenerator(seed=99)
+        result1 = gen1.generate_from_schema(schema, count=1)
+        gen2 = MockDataGenerator(seed=99)
+        result2 = gen2.generate_from_schema(schema, count=1)
+        assert result1["tags"] == result2["tags"]
+
+    def test_seed_propagation_in_objects(self):
+        schema = {
+            "type": "object",
+            "properties": {
+                "nested": {
+                    "type": "object",
+                    "properties": {
+                        "x": {"type": "integer", "minimum": 0, "maximum": 1000},
+                        "y": {"type": "integer", "minimum": 0, "maximum": 1000},
+                    },
+                }
+            },
+        }
+        gen1 = MockDataGenerator(seed=99)
+        result1 = gen1.generate_from_schema(schema, count=1)
+        gen2 = MockDataGenerator(seed=99)
+        result2 = gen2.generate_from_schema(schema, count=1)
+        assert result1["nested"] == result2["nested"]

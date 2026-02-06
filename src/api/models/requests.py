@@ -100,6 +100,8 @@ def parse_body(model=None):
                     ) from e
 
             if model is not None:
+                if isinstance(body, list) and "data" in model.model_fields:
+                    body = {"data": body}
                 if body is None or not isinstance(body, dict):
                     raise InputValidationError(
                         message="Request body must be a JSON object",

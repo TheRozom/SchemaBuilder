@@ -127,3 +127,43 @@ class TestGeneratorAPI:
                 assert 0 <= record["score"] <= 100
                 assert 10.0 <= record["price"] <= 50.0
                 assert 5 <= len(record["code"]) <= 10
+
+    async def test_mock_data_with_anyof_schema(self):
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            schema = {
+                "type": "object",
+                "properties": {"value": {"anyOf": [{"type": "string"}, {"type": "integer"}]}},
+            }
+            response = await client.post(
+                "/generator/mock-data",
+                json={"schema": schema, "count": 10},
+            )
+            assert response.status_code == 200
+            data = response.json()
+            assert data["count"] == 10
+            for record in data["data"]:
+                assert isinstance(record["value"], (str, int))
+
+    async def test_mock_data_with_top_level_anyof(self):
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            schema = {
+                "anyOf": [
+                    {
+                        "type": "object",
+                        "properties": {"name": {"type": "string"}},
+                    },
+                    {
+                        "type": "object",
+                        "properties": {"age": {"type": "integer"}},
+                    },
+                ]
+            }
+            response = await client.post(
+                "/generator/mock-data",
+                json={"schema": schema, "count": 10},
+            )
+            assert response.status_code == 200
+            data = response.json()
+            assert data["count"] == 10
+            for record in data["data"]:
+                assert "name" in record or "age" in record
