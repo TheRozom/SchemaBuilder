@@ -197,16 +197,12 @@ class SchemaMerger:
         first_items_node = (
             first_items
             if isinstance(first_items, SchemaNode)
-            else SchemaNode(**first_items)
-            if first_items
-            else SchemaNode()
+            else SchemaNode(**first_items) if first_items else SchemaNode()
         )
         second_items_node = (
             second_items
             if isinstance(second_items, SchemaNode)
-            else SchemaNode(**second_items)
-            if second_items
-            else SchemaNode()
+            else SchemaNode(**second_items) if second_items else SchemaNode()
         )
 
         return SchemaNode(
