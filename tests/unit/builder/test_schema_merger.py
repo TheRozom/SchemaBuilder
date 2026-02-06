@@ -63,18 +63,21 @@ class TestSchemaMergerIntegers:
 
     def test_merge_integer_and_number_becomes_number(self):
         merger = SchemaMerger()
-        first = SchemaNode(type=SchemaType.INTEGER, maximum=50)
-        second = SchemaNode(type=SchemaType.NUMBER, maximum=100)
+        first = SchemaNode(type=SchemaType.INTEGER, minimum=-10, maximum=50)
+        second = SchemaNode(type=SchemaType.NUMBER, minimum=-5.5, maximum=100.5)
         result = merger.merge(first, second)
         assert result.type == SchemaType.NUMBER
-        assert result.minimum == 0
+        assert result.minimum == -10
+        assert result.maximum == 100.5
 
     def test_merge_number_and_integer_becomes_number(self):
         merger = SchemaMerger()
-        first = SchemaNode(type=SchemaType.NUMBER, maximum=100)
-        second = SchemaNode(type=SchemaType.INTEGER, maximum=50)
+        first = SchemaNode(type=SchemaType.NUMBER, minimum=-3.5, maximum=100.5)
+        second = SchemaNode(type=SchemaType.INTEGER, minimum=0, maximum=50)
         result = merger.merge(first, second)
         assert result.type == SchemaType.NUMBER
+        assert result.minimum == -3.5
+        assert result.maximum == 100.5
 
 
 class TestSchemaMergerObjects:

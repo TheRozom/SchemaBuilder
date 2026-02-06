@@ -210,7 +210,8 @@ class TestPrimitiveTypes:
         service = SchemaBuilderService()
         result = service.generate_schema(3.14)
         assert result.schema_content["type"] == "number"
-        assert result.schema_content["minimum"] == 0
+        assert result.schema_content["minimum"] == 3.14
+        assert result.schema_content["maximum"] == 3.14
 
 
 class TestComplexScenarios:

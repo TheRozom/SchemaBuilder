@@ -97,13 +97,16 @@ class SchemaMerger:
             SchemaType.INTEGER,
             SchemaType.NUMBER,
         }:
-            return SchemaNode(type=SchemaType.NUMBER, minimum=0)
+            return self._merge_number(first_node, second_node)
 
         if first_type == SchemaType.STRING:
             return self._merge_string(first_node, second_node)
 
         if first_type == SchemaType.INTEGER:
             return self._merge_integer(first_node, second_node)
+
+        if first_type == SchemaType.NUMBER:
+            return self._merge_number(first_node, second_node)
 
         if first_type == SchemaType.OBJECT:
             return self._merge_object(first_node, second_node)
@@ -137,6 +140,18 @@ class SchemaMerger:
 
         return SchemaNode(
             type=SchemaType.INTEGER,
+            minimum=min(first_minimum, second_minimum),
+            maximum=max(first_maximum, second_maximum),
+        )
+
+    def _merge_number(self, first_schema: SchemaNode, second_schema: SchemaNode) -> SchemaNode:
+        first_minimum = first_schema.minimum if first_schema.minimum is not None else 0
+        second_minimum = second_schema.minimum if second_schema.minimum is not None else 0
+        first_maximum = first_schema.maximum if first_schema.maximum is not None else 0
+        second_maximum = second_schema.maximum if second_schema.maximum is not None else 0
+
+        return SchemaNode(
+            type=SchemaType.NUMBER,
             minimum=min(first_minimum, second_minimum),
             maximum=max(first_maximum, second_maximum),
         )

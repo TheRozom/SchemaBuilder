@@ -12,11 +12,11 @@ class SchemaNode(BaseModel):
     minLength: Optional[int] = None
     maxLength: Optional[int] = None
     format: Optional[str] = None
-    minimum: Optional[int] = None
-    maximum: Optional[int] = None
-    exclusiveMinimum: Optional[int] = None
-    exclusiveMaximum: Optional[int] = None
-    multipleOf: Optional[int] = None
+    minimum: Optional[Union[int, float]] = None
+    maximum: Optional[Union[int, float]] = None
+    exclusiveMinimum: Optional[Union[int, float]] = None
+    exclusiveMaximum: Optional[Union[int, float]] = None
+    multipleOf: Optional[Union[int, float]] = None
     items: Optional[Union[Dict[str, Any], "SchemaNode"]] = None
     minItems: Optional[int] = None
     maxItems: Optional[int] = None

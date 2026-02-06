@@ -45,13 +45,15 @@ class TestSchemaInferrerPrimitiveTypes:
         inferrer = SchemaInferrer()
         schema = inferrer.infer(3.14)
         assert schema.type == SchemaType.NUMBER
-        assert schema.minimum == 0
+        assert schema.minimum == 3.14
+        assert schema.maximum == 3.14
 
     def test_infer_float_zero(self):
         inferrer = SchemaInferrer()
         schema = inferrer.infer(0.0)
         assert schema.type == SchemaType.NUMBER
-        assert schema.minimum == 0
+        assert schema.minimum == 0.0
+        assert schema.maximum == 0.0
 
 
 class TestSchemaInferrerStringPatterns:
@@ -379,7 +381,8 @@ class TestSchemaInferrerEdgeCases:
         inferrer = SchemaInferrer()
         schema = inferrer.infer(-3.14)
         assert schema.type == SchemaType.NUMBER
-        assert schema.minimum == 0
+        assert schema.minimum == -3.14
+        assert schema.maximum == -3.14
 
     def test_infer_very_long_string(self):
         inferrer = SchemaInferrer()

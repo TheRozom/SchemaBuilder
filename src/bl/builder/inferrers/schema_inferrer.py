@@ -62,7 +62,7 @@ class SchemaInferrer:
         return SchemaNode(type=SchemaType.INTEGER, minimum=data, maximum=data)
 
     def _handle_float(self, data: float, path: str) -> SchemaNode:
-        return SchemaNode(type=SchemaType.NUMBER, minimum=0)
+        return SchemaNode(type=SchemaType.NUMBER, minimum=data, maximum=data)
 
     def _infer_string(self, data: str, path: str) -> SchemaNode:
         schema = SchemaNode(type=SchemaType.STRING, minLength=0, maxLength=len(data))
