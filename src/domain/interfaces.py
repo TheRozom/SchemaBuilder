@@ -1,21 +1,13 @@
-from abc import ABC, abstractmethod
-from typing import Any, Dict, List
+from typing import Any, Dict, Protocol, runtime_checkable
+
 from src.domain.models import SchemaDefinition
 
 
-class ISchemaService(ABC):
-
-    @abstractmethod
-    async def generate_schema(self, data: Any) -> SchemaDefinition:
-        pass
+@runtime_checkable
+class ISchemaService(Protocol):
+    def generate_schema(self, data: Any) -> SchemaDefinition: ...
 
 
-class IAIService(ABC):
-
-    @abstractmethod
-    async def generate_regex(self, samples: List[str]) -> str | None:
-        pass
-
-    @abstractmethod
-    async def evaluate_schema(self, schema: Dict[str, Any]) -> int | None:
-        pass
+@runtime_checkable
+class IAIService(Protocol):
+    async def evaluate_schema(self, schema: Dict[str, Any]) -> int | None: ...

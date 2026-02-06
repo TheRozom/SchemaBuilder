@@ -16,7 +16,7 @@ patterns:
 
   date:
     regex: "^\\d{4}-\\d{2}-\\d{2}$"
-    description: "ISO date pattern (YYYY-MM-DD)" 
+    description: "ISO date pattern (YYYY-MM-DD)"
     flags: []
 
   datetime:

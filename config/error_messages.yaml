@@ -1,6 +1,3 @@
-# Error messages and fix suggestions for JSON Schema validation
-# All strings are templates that support placeholders: {path}, {value}, {constraint_value}, {actual_type}, {expected_type}, {allowed_values}
-
 messages:
   type:
     fix: "At '{path}': Change type from '{expected_type}' to '{actual_type}' OR add '{actual_type}' to allowed types using anyOf/oneOf. Current value is {value_repr}"

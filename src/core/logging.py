@@ -17,8 +17,10 @@ class LoggerFactory:
         date_format: Optional[str] = None,
     ) -> None:
         cls._log_level = level
+
         if log_format:
             cls._log_format = log_format
+
         if date_format:
             cls._date_format = date_format
 
@@ -28,7 +30,6 @@ class LoggerFactory:
             datefmt=cls._date_format,
             handlers=[logging.StreamHandler(sys.stdout)],
         )
-
         cls._initialized = True
 
     @classmethod
@@ -37,6 +38,7 @@ class LoggerFactory:
             cls.configure()
 
         logger = logging.getLogger(name)
+
         return logger
 
 

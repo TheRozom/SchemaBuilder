@@ -1,3 +1,3 @@
-from .patterns import PatternType, PATTERN_REGISTRY
+from .patterns import PATTERN_REGISTRY
 
-__all__ = ["PatternType", "PATTERN_REGISTRY"]
+__all__ = ["PATTERN_REGISTRY"]

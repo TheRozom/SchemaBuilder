@@ -1,16 +1,13 @@
-from .service import SchemaBuilderService
+from .builders import GroupedSchemaBuilder
+from .config import PATTERN_REGISTRY
 from .inferrers import SchemaInferrer
 from .mergers import SchemaMerger
-from .injectors import RegexInjector
-from .builders import GroupedSchemaBuilder
-from .config import PatternType, PATTERN_REGISTRY
+from .service import SchemaBuilderService
 
 __all__ = [
     "SchemaBuilderService",
     "SchemaInferrer",
     "SchemaMerger",
-    "RegexInjector",
     "GroupedSchemaBuilder",
-    "PatternType",
     "PATTERN_REGISTRY",
 ]

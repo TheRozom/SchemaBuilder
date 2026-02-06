@@ -1,4 +1,3 @@
-import pytest
 from src.bl.scoring.engine.scoring_engine import ScoringEngine
 
 
@@ -29,15 +28,11 @@ def test_low_score_ambiguity():
         "items": {"anyOf": [{"type": "string"}, {"type": "integer"}]},
     }
     result = engine.score(schema)
-    # Ambiguity should be low because of anyOf
     assert result.breakdown["ambiguity"] < 100.0
 
 
 def test_low_score_completeness():
     engine = ScoringEngine()
-    schema = {
-        "type": "integer"
-        # Missing min/max
-    }
+    schema = {"type": "integer"}
     result = engine.score(schema)
     assert result.breakdown["completeness"] < 100.0

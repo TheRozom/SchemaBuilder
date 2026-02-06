@@ -1,25 +1,44 @@
-from .enums import SchemaType, SchemaKeyword, ConfidenceLevel, TreeKeys
-from .models import (
-    SchemaNode,
-    AnalysisResult,
-    AnalysisSummary,
-    StructureGroup,
-    JsonStructure,
-    GroupData,
-    ValidationResult,
-    ValidationError,
-)
+from .enums import ConfidenceLevel, SchemaKeyword, SchemaType, TreeKeys
 from .exceptions import (
-    SchemaBuilderError,
-    ValidationError as ValidationException,
-    ConfigurationError,
+    AIServiceError,
     AnalysisError,
+    ConfigurationError,
+    InputValidationError,
+    SchemaBuilderError,
     SchemaInferenceError,
     ScoringError,
-    AIServiceError,
-    InputValidationError,
 )
-from .utils import TypeChecker, TreeTraversal
+from .exceptions import (
+    ValidationError as ValidationException,
+)
+from .models import (
+    AnalysisResult,
+    AnalysisSummary,
+    GroupData,
+    JsonStructure,
+    SchemaNode,
+    StructureGroup,
+    ValidationError,
+    ValidationResult,
+)
+from .utils import (
+    get_type_name,
+    is_bool,
+    is_dict,
+    is_empty_collection,
+    is_float,
+    is_int,
+    is_list,
+    is_list_of_dicts,
+    is_none,
+    is_numeric,
+    is_primitive,
+    is_string,
+    safe_len,
+    tree_analysis,
+    tree_operations,
+    tree_traversal,
+)
 
 __all__ = [
     "SchemaType",
@@ -42,6 +61,20 @@ __all__ = [
     "ScoringError",
     "AIServiceError",
     "InputValidationError",
-    "TypeChecker",
-    "TreeTraversal",
+    "is_dict",
+    "is_list",
+    "is_string",
+    "is_int",
+    "is_float",
+    "is_bool",
+    "is_none",
+    "is_numeric",
+    "is_primitive",
+    "is_empty_collection",
+    "is_list_of_dicts",
+    "get_type_name",
+    "safe_len",
+    "tree_analysis",
+    "tree_operations",
+    "tree_traversal",
 ]

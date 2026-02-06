@@ -21,9 +21,7 @@ class SchemaNode(BaseModel):
     minItems: Optional[int] = None
     maxItems: Optional[int] = None
     uniqueItems: Optional[bool] = None
-    properties: Dict[str, Union[Dict[str, Any], "SchemaNode"]] = Field(
-        default_factory=dict
-    )
+    properties: Dict[str, Union[Dict[str, Any], "SchemaNode"]] = Field(default_factory=dict)
     additionalProperties: Optional[bool] = None
     required: List[str] = Field(default_factory=list)
     anyOf: List[Union[Dict[str, Any], "SchemaNode"]] = Field(default_factory=list)
@@ -42,37 +40,38 @@ class SchemaNode(BaseModel):
         result = {}
 
         for field_name, field_value in self:
-            if field_value is None:
+            if self._is_empty(field_value):
                 continue
 
-            if isinstance(field_value, list) and len(field_value) == 0:
-                continue
-
-            if isinstance(field_value, dict) and len(field_value) == 0:
-                continue
-
-            if isinstance(field_value, SchemaNode):
-                result[field_name] = field_value.to_dict()
-
-            elif isinstance(field_value, dict):
-                result[field_name] = {
-                    k: v.to_dict() if isinstance(v, SchemaNode) else v
-                    for k, v in field_value.items()
-                }
-
-            elif isinstance(field_value, list):
-                result[field_name] = [
-                    item.to_dict() if isinstance(item, SchemaNode) else item
-                    for item in field_value
-                ]
-
-            elif isinstance(field_value, SchemaType):
-                result[field_name] = field_value.value
-
-            else:
-                result[field_name] = field_value
+            result[field_name] = self._serialize_value(field_value)
 
         return result
+
+    @staticmethod
+    def _is_empty(value: Any) -> bool:
+        """Check if a value should be omitted from the serialized output."""
+        if value is None:
+            return True
+        if isinstance(value, (list, dict)) and not value:
+            return True
+        return False
+
+    @staticmethod
+    def _serialize_value(value: Any) -> Any:
+        """Serialize a single field value to a JSON-compatible type."""
+        if isinstance(value, SchemaNode):
+            return value.to_dict()
+
+        if isinstance(value, dict):
+            return {k: v.to_dict() if isinstance(v, SchemaNode) else v for k, v in value.items()}
+
+        if isinstance(value, list):
+            return [item.to_dict() if isinstance(item, SchemaNode) else item for item in value]
+
+        if isinstance(value, SchemaType):
+            return value.value
+
+        return value
 
 
 SchemaNode.model_rebuild()

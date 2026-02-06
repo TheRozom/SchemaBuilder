@@ -1,5 +1,7 @@
-from typing import Any, Dict, List
+from typing import List
+
 from pydantic import BaseModel
+
 from .analysis_summary import AnalysisSummary
 from .structure_group import StructureGroup
 
@@ -10,6 +12,3 @@ class AnalysisResult(BaseModel):
     groups: List[StructureGroup]
     similarity_matrix: List[List[float]]
     summary: AnalysisSummary
-
-    def to_dict(self) -> Dict[str, Any]:
-        return self.model_dump()

@@ -1,0 +1,100 @@
+# Pattern generators for regex-based generation
+pattern_generators:
+  - pattern: "^\\d+$"
+    generator: "random_digits"
+    args:
+      min_val: 1000
+      max_val: 9999
+  - pattern: "^[a-zA-Z]+$"
+    generator: "word"
+  - pattern: "^[a-zA-Z0-9]+$"
+    generator: "bothify"
+    args:
+      text: "????####"
+
+# Field name keyword mappings for smart generation
+field_name_keywords:
+  - keywords: ["first", "name"]
+    match_all: true
+    faker_method: "first_name"
+  - keywords: ["last", "name"]
+    match_all: true
+    faker_method: "last_name"
+  - keywords: ["middle", "name"]
+    match_all: true
+    faker_method: "first_name"
+  - keywords: ["full", "name"]
+    match_all: true
+    faker_method: "name"
+  - keywords: ["name"]
+    match_all: true
+    faker_method: "name"
+
+  - keywords: ["street"]
+    faker_method: "street_address"
+  - keywords: ["state"]
+    faker_method: "state"
+  - keywords: ["province"]
+    faker_method: "state"
+  - keywords: ["city"]
+    faker_method: "city"
+  - keywords: ["country"]
+    faker_method: "country"
+  - keywords: ["zip", "postal"]
+    faker_method: "postcode"
+
+  - keywords: ["username", "user_name"]
+    faker_method: "user_name"
+  - keywords: ["password"]
+    faker_method: "password"
+  - keywords: ["email"]
+    faker_method: "email"
+
+  - keywords: ["age"]
+    generator: "random_int"
+    args:
+      min_val: 18
+      max_val: 80
+  - keywords: ["year"]
+    generator: "random_year"
+  - keywords: ["month"]
+    generator: "random_int"
+    args:
+      min_val: 1
+      max_val: 12
+  - keywords: ["day"]
+    generator: "random_int"
+    args:
+      min_val: 1
+      max_val: 28
+
+  - keywords: ["title"]
+    faker_method: "sentence"
+    faker_args:
+      nb_words: 4
+    post_process: "strip_period"
+  - keywords: ["comment", "note", "description"]
+    faker_method: "sentence"
+    faker_args:
+      nb_words: 10
+  - keywords: ["code"]
+    faker_method: "bothify"
+    faker_args:
+      text: "??####"
+
+# Default value ranges
+default_ranges:
+  integer:
+    minimum: 0
+    maximum: 100
+  number:
+    minimum: 0.0
+    maximum: 100.0
+  string:
+    min_length: 1
+    max_length: 100
+  array:
+    min_items: 1
+    max_items: 5
+  year:
+    min_year: 1950

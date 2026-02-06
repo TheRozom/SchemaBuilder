@@ -4,15 +4,15 @@ from jsonschema import Draft7Validator, SchemaError
 from jsonschema.exceptions import _WrappedReferencingError
 
 from src.core import get_logger
-from src.shared.models import ValidationResult, ValidationError
 from src.shared.exceptions import ValidationError as ValidationException
+from src.shared.models import ValidationError, ValidationResult
+
 from .formatters import ErrorFormatter
 
 logger = get_logger(__name__)
 
 
 class SchemaValidator:
-
     def __init__(self):
         self.formatter = ErrorFormatter()
         logger.debug("SchemaValidator initialized")
@@ -24,6 +24,7 @@ class SchemaValidator:
 
         try:
             validator = Draft7Validator(schema)
+
         except SchemaError as e:
             logger.error("Invalid schema provided: %s", e)
             raise ValidationException(
@@ -37,6 +38,7 @@ class SchemaValidator:
         for idx, item in enumerate(data_list):
             try:
                 errors = list(validator.iter_errors(item))
+
             except _WrappedReferencingError as e:
                 logger.error("Schema reference error during validation: %s", e)
                 raise ValidationException(
@@ -48,11 +50,11 @@ class SchemaValidator:
                 formatted_errors = self.formatter.format(idx, errors)
                 all_errors.extend(formatted_errors)
                 logger.debug("Object %d: %d validation errors", idx, len(errors))
+
             else:
                 valid_count += 1
 
         is_valid = len(all_errors) == 0
-
         logger.info(
             "Validation complete: %d valid, %d total errors",
             valid_count,

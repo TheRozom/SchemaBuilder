@@ -1,5 +1,5 @@
-from .schema import SchemaType, SchemaKeyword
 from .analysis import ConfidenceLevel, TreeKeys
+from .schema import SchemaKeyword, SchemaType
 
 __all__ = [
     "SchemaType",

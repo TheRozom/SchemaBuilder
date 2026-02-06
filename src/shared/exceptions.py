@@ -1,8 +1,7 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 
 class SchemaBuilderError(Exception):
-
     def __init__(
         self,
         message: str,
@@ -21,7 +20,6 @@ class SchemaBuilderError(Exception):
 
 
 class ValidationError(SchemaBuilderError):
-
     def __init__(
         self,
         message: str,
@@ -37,17 +35,20 @@ class ValidationError(SchemaBuilderError):
 
     def to_dict(self) -> Dict[str, Any]:
         result = super().to_dict()
+
         if self.path:
             result["path"] = self.path
+
         if self.expected is not None:
             result["expected"] = self.expected
+
         if self.actual is not None:
             result["actual"] = self.actual
+
         return result
 
 
 class ConfigurationError(SchemaBuilderError):
-
     def __init__(
         self,
         message: str,
@@ -59,13 +60,14 @@ class ConfigurationError(SchemaBuilderError):
 
     def to_dict(self) -> Dict[str, Any]:
         result = super().to_dict()
+
         if self.config_file:
             result["config_file"] = self.config_file
+
         return result
 
 
 class AnalysisError(SchemaBuilderError):
-
     def __init__(
         self,
         message: str,
@@ -77,13 +79,14 @@ class AnalysisError(SchemaBuilderError):
 
     def to_dict(self) -> Dict[str, Any]:
         result = super().to_dict()
+
         if self.operation:
             result["operation"] = self.operation
+
         return result
 
 
 class SchemaInferenceError(SchemaBuilderError):
-
     def __init__(
         self,
         message: str,
@@ -97,15 +100,17 @@ class SchemaInferenceError(SchemaBuilderError):
 
     def to_dict(self) -> Dict[str, Any]:
         result = super().to_dict()
+
         if self.data_type:
             result["data_type"] = self.data_type
+
         if self.path:
             result["path"] = self.path
+
         return result
 
 
 class ScoringError(SchemaBuilderError):
-
     def __init__(
         self,
         message: str,
@@ -117,13 +122,14 @@ class ScoringError(SchemaBuilderError):
 
     def to_dict(self) -> Dict[str, Any]:
         result = super().to_dict()
+
         if self.rule_name:
             result["rule_name"] = self.rule_name
+
         return result
 
 
 class AIServiceError(SchemaBuilderError):
-
     def __init__(
         self,
         message: str,
@@ -135,13 +141,14 @@ class AIServiceError(SchemaBuilderError):
 
     def to_dict(self) -> Dict[str, Any]:
         result = super().to_dict()
+
         if self.operation:
             result["operation"] = self.operation
+
         return result
 
 
 class InputValidationError(SchemaBuilderError):
-
     def __init__(
         self,
         message: str,
@@ -155,8 +162,11 @@ class InputValidationError(SchemaBuilderError):
 
     def to_dict(self) -> Dict[str, Any]:
         result = super().to_dict()
+
         if self.field:
             result["field"] = self.field
+
         if self.expected_type:
             result["expected_type"] = self.expected_type
+
         return result

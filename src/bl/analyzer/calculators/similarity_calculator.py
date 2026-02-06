@@ -1,43 +1,64 @@
-from typing import List
+from typing import Any, Dict, List, Set
 
-from src.shared.models import JsonStructure
 from src.bl.analyzer.trees import TreeComparator
+from src.shared.models import JsonStructure
 
 
 class SimilarityCalculator:
-
     def __init__(self) -> None:
         self.comparator = TreeComparator()
 
     def calculate(self, json_structures: List[JsonStructure]) -> List[List[float]]:
-        n = len(json_structures)
-        matrix = [[0.0] * n for _ in range(n)]
+        structure_count = len(json_structures)
+        similarity_matrix = self._initialize_matrix(structure_count)
 
-        for i in range(n):
-            for j in range(n):
-                if i == j:
-                    matrix[i][j] = 100.0
+        for first_index in range(structure_count):
+            for second_index in range(structure_count):
+                if first_index == second_index:
+                    similarity_matrix[first_index][second_index] = 100.0
                 else:
-                    tree_i = json_structures[i].tree
-                    tree_j = json_structures[j].tree
+                    similarity = self._calculate_similarity(
+                        json_structures[first_index].tree,
+                        json_structures[second_index].tree,
+                    )
+                    similarity_matrix[first_index][second_index] = similarity
 
-                    keys_i = set(self.comparator.flatten(tree_i))
-                    keys_j = set(self.comparator.flatten(tree_j))
+        return similarity_matrix
 
-                    if not keys_i and not keys_j:
-                        similarity = 100.0
-                    elif not keys_i or not keys_j:
-                        similarity = 0.0
-                    else:
-                        if self.comparator.contains(tree_i, tree_j):
-                            similarity = 100.0
-                        elif self.comparator.contains(tree_j, tree_i):
-                            similarity = 100.0
-                        else:
-                            intersection = len(keys_i & keys_j)
-                            smaller_size = min(len(keys_i), len(keys_j))
-                            similarity = round((intersection / smaller_size) * 100, 2)
+    def _initialize_matrix(self, size: int) -> List[List[float]]:
+        return [[0.0] * size for _ in range(size)]
 
-                    matrix[i][j] = similarity
+    def _calculate_similarity(
+        self, first_tree: Dict[str, Any], second_tree: Dict[str, Any]
+    ) -> float:
+        first_keys = set(self.comparator.flatten(first_tree))
+        second_keys = set(self.comparator.flatten(second_tree))
 
-        return matrix
+        if self._both_empty(first_keys, second_keys):
+            return 100.0
+
+        if self._one_empty(first_keys, second_keys):
+            return 0.0
+
+        if self._has_containment(first_tree, second_tree):
+            return 100.0
+
+        return self._calculate_partial_similarity(first_keys, second_keys)
+
+    def _both_empty(self, first_keys: Set[str], second_keys: Set[str]) -> bool:
+        return not first_keys and not second_keys
+
+    def _one_empty(self, first_keys: Set[str], second_keys: Set[str]) -> bool:
+        return not first_keys or not second_keys
+
+    def _has_containment(self, first_tree: Dict[str, Any], second_tree: Dict[str, Any]) -> bool:
+        return self.comparator.contains(first_tree, second_tree) or self.comparator.contains(
+            second_tree, first_tree
+        )
+
+    def _calculate_partial_similarity(self, first_keys: Set[str], second_keys: Set[str]) -> float:
+        intersection_count = len(first_keys & second_keys)
+        smaller_key_count = min(len(first_keys), len(second_keys))
+        if smaller_key_count == 0:
+            return 0.0
+        return round((intersection_count / smaller_key_count) * 100, 2)

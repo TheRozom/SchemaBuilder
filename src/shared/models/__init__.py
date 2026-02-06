@@ -1,13 +1,14 @@
-from src.shared.enums import SchemaType, SchemaKeyword, ConfidenceLevel, TreeKeys
-from .schema import SchemaNode
+from src.shared.enums import ConfidenceLevel, SchemaKeyword, SchemaType, TreeKeys
+
 from .analysis import (
     AnalysisResult,
     AnalysisSummary,
-    StructureGroup,
-    JsonStructure,
     GroupData,
+    JsonStructure,
+    StructureGroup,
 )
-from .validation import ValidationResult, ValidationError
+from .schema import SchemaNode
+from .validation import ValidationError, ValidationResult
 
 __all__ = [
     "SchemaType",

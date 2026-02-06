@@ -28,9 +28,7 @@ def get_schema_service() -> ISchemaService:
 
 @router.post("/build", response_model=SchemaDefinition)
 async def build_schema(
-    data: list[Any] = Body(
-        ..., description="List of JSON objects to build schema from"
-    ),
+    data: list[Any] = Body(..., description="List of JSON objects to build schema from"),
     schema_service: ISchemaService = Depends(get_schema_service),
     ai_service: IAIService = Depends(get_ai_service),
 ):
@@ -61,10 +59,8 @@ async def build_schema(
 
     schema_def.score = score_res
     validator = SchemaValidator()
-    validation_res = validator.validate_data_against_schema(
-        schema_def.schema_content, data
-    )
-    schema_def.validation = ValidationResult(**validation_res.to_dict())
+    validation_res = validator.validate_data_against_schema(schema_def.schema_content, data)
+    schema_def.validation = ValidationResult(**validation_res.model_dump())
     logger.info("Schema built successfully with score %d", score_res.overall)
 
     return schema_def
@@ -94,7 +90,7 @@ async def infer_schema_from_data(
                 details={"error": str(e)},
             ) from e
 
-    schema_def = await schema_service.generate_schema(data)
+    schema_def = schema_service.generate_schema(data)
     scorer = ScoringEngine()
     score_res = scorer.score(schema_def.schema_content)
 
@@ -105,10 +101,8 @@ async def infer_schema_from_data(
     validator = SchemaValidator()
     data_list = data if isinstance(data, list) else [data] if data is not None else []
 
-    validation_res = validator.validate_data_against_schema(
-        schema_def.schema_content, data_list
-    )
-    schema_def.validation = ValidationResult(**validation_res.to_dict())
+    validation_res = validator.validate_data_against_schema(schema_def.schema_content, data_list)
+    schema_def.validation = ValidationResult(**validation_res.model_dump())
     logger.info("Schema inferred successfully with score %d", score_res.overall)
 
     return schema_def
@@ -116,9 +110,7 @@ async def infer_schema_from_data(
 
 @router.post("/score")
 async def score_schema(
-    json_schema: dict[str, Any] = Body(
-        ..., description="JSON Schema to score", alias="schema"
-    ),
+    json_schema: dict[str, Any] = Body(..., description="JSON Schema to score", alias="schema"),
     ai_service: IAIService = Depends(get_ai_service),
 ):
     logger.info("POST /schemas/score")
@@ -138,14 +130,10 @@ async def score_schema(
 
 
 @router.post("/analyze", response_model=ConflictAnalysis)
-async def analyze_schema_conflicts(
-    data: list[Any] = Body(
-        ..., description="List of JSON objects to analyze for conflicts"
-    ),
+def analyze_schema_conflicts(
+    data: list[Any] = Body(..., description="List of JSON objects to analyze for conflicts"),
 ):
-    logger.info(
-        "POST /schemas/analyze - %d items", len(data) if isinstance(data, list) else 0
-    )
+    logger.info("POST /schemas/analyze - %d items", len(data) if isinstance(data, list) else 0)
 
     if not isinstance(data, list):
         raise InputValidationError(
@@ -165,7 +153,7 @@ async def analyze_schema_conflicts(
 
 
 @router.post("/validate")
-async def validate_data(
+def validate_data(
     json_schema: dict[str, Any] = Body(
         ..., description="JSON Schema to validate against", alias="schema"
     ),

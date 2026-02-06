@@ -1,11 +1,10 @@
-from typing import List, Dict, Any
+from typing import List
 
 from src.core import load_yaml_config
 from src.shared.models import AnalysisSummary, ConfidenceLevel, GroupData
 
 
 class SummaryGenerator:
-
     def __init__(self) -> None:
         self.config = load_yaml_config("summary_thresholds.yaml")
 
@@ -21,15 +20,17 @@ class SummaryGenerator:
             recommendation = rec_config["message"].format(total=total)
             should_split = rec_config["should_split"]
             confidence = ConfidenceLevel[rec_config["confidence"]]
+
         elif unique_count == total:
             rec_config = recommendations["all_incompatible"]
-            recommendation = rec_config["message"].format(
-                total=total, unique_count=unique_count
-            )
+            recommendation = rec_config["message"].format(total=total, unique_count=unique_count)
             should_split = rec_config["should_split"]
             confidence = ConfidenceLevel[rec_config["confidence"]]
+
         else:
-            avg_similarity = sum(sum(row) for row in similarity) / (total * total)
+            avg_similarity = (
+                sum(sum(row) for row in similarity) / (total * total) if total > 0 else 0.0
+            )
 
             if avg_similarity > thresholds["high_similarity"]["threshold"]:
                 rec_config = recommendations["high_similarity"]
@@ -38,6 +39,7 @@ class SummaryGenerator:
                 )
                 should_split = rec_config["should_split"]
                 confidence = ConfidenceLevel[rec_config["confidence"]]
+
             elif avg_similarity > thresholds["moderate_similarity"]["threshold"]:
                 rec_config = recommendations["moderate_similarity"]
                 recommendation = rec_config["message"].format(
@@ -45,6 +47,7 @@ class SummaryGenerator:
                 )
                 should_split = rec_config["should_split"]
                 confidence = ConfidenceLevel[rec_config["confidence"]]
+
             else:
                 rec_config = recommendations["low_similarity"]
                 recommendation = rec_config["message"].format(

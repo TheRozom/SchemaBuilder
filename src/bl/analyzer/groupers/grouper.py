@@ -1,17 +1,14 @@
-from typing import List
+from typing import Any, Dict, List
 
-from src.shared.models import JsonStructure, GroupData
 from src.bl.analyzer.trees import TreeComparator
+from src.shared.models import GroupData, JsonStructure
 
 
 class Grouper:
-
     def __init__(self) -> None:
         self.comparator = TreeComparator()
 
-    def group_by_containment(
-        self, json_structures: List[JsonStructure]
-    ) -> List[GroupData]:
+    def group_by_containment(self, json_structures: List[JsonStructure]) -> List[GroupData]:
         groups: List[GroupData] = []
         used_indices = set()
 
@@ -19,23 +16,44 @@ class Grouper:
             if i in used_indices:
                 continue
 
-            group = GroupData(indices=[i], merged_tree=struct_i.tree)
+            group = self._create_initial_group(struct_i, i)
             used_indices.add(i)
 
-            for j, struct_j in enumerate(json_structures[i + 1 :], start=i + 1):
-                if j in used_indices:
-                    continue
-
-                tree_i = group.merged_tree
-                tree_j = struct_j.tree
-
-                if self.comparator.contains(tree_i, tree_j) or self.comparator.contains(
-                    tree_j, tree_i
-                ):
-                    group.indices.append(j)
-                    group.merged_tree = self.comparator.merge(tree_i, tree_j)
-                    used_indices.add(j)
+            group = self._add_compatible_structures(
+                group, json_structures, used_indices, start_index=i + 1
+            )
 
             groups.append(group)
 
         return groups
+
+    def _create_initial_group(self, structure: JsonStructure, index: int) -> GroupData:
+        return GroupData(indices=[index], merged_tree=structure.tree)
+
+    def _add_compatible_structures(
+        self,
+        group: GroupData,
+        json_structures: List[JsonStructure],
+        used_indices: set,
+        start_index: int,
+    ) -> GroupData:
+        for j, struct_j in enumerate(json_structures[start_index:], start=start_index):
+            if j in used_indices:
+                continue
+
+            if self._are_structures_compatible(group.merged_tree, struct_j.tree):
+                group = self._merge_structure_into_group(group, struct_j, j)
+                used_indices.add(j)
+
+        return group
+
+    def _are_structures_compatible(self, tree_a: Dict[str, Any], tree_b: Dict[str, Any]) -> bool:
+        return self.comparator.contains(tree_a, tree_b) or self.comparator.contains(tree_b, tree_a)
+
+    def _merge_structure_into_group(
+        self, group: GroupData, structure: JsonStructure, index: int
+    ) -> GroupData:
+        return GroupData(
+            indices=group.indices + [index],
+            merged_tree=self.comparator.merge(group.merged_tree, structure.tree),
+        )

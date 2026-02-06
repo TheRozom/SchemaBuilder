@@ -1,5 +1,5 @@
-from .engine import ScoringEngine, ScoreResult
 from .config import ScoringWeights
+from .engine import ScoreResult, ScoringEngine
 
 __all__ = [
     "ScoringEngine",

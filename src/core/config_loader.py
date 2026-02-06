@@ -3,7 +3,7 @@ from typing import Any, Dict, Optional
 
 import yaml
 
-from src.core import get_logger
+from src.core.logging import get_logger
 from src.shared.exceptions import ConfigurationError
 
 logger = get_logger(__name__)
@@ -17,20 +17,22 @@ def load_yaml_config(
 ) -> Dict[str, Any]:
     base_dir = config_dir or CONFIG_DIR
     config_path = base_dir / filename
-
     logger.debug("Loading config from %s", config_path)
 
     try:
         with open(config_path, "r", encoding="utf-8") as f:
             data = yaml.safe_load(f)
             logger.debug("Successfully loaded config: %s", filename)
+
             return data or {}
+
     except FileNotFoundError as e:
         logger.error("Config file not found: %s", config_path)
         raise ConfigurationError(
             message=f"Configuration file not found: {filename}",
             config_file=str(config_path),
         ) from e
+
     except yaml.YAMLError as e:
         logger.error("Invalid YAML in config %s: %s", filename, e)
         raise ConfigurationError(

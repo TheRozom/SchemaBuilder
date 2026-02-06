@@ -4,9 +4,9 @@ schema_building:
   similarity_threshold_for_anyOf: 50
 
   strategy:
-    single_group: "merge"        
-    multiple_groups: "anyOf"     
+    single_group: "merge"
+    multiple_groups: "anyOf"
 
   grouping:
-    min_similarity_for_same_group: 80  
-    use_analyzer_groups: true           
+    min_similarity_for_same_group: 80
+    use_analyzer_groups: true
