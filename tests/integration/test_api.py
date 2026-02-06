@@ -154,7 +154,7 @@ class TestBuildEndpoint:
             {"name": "Jane", "age": 25},
             {"name": "Bob", "age": 35},
         ]
-        response = await client.post("/schemas/build", json=data)
+        response = await client.post("/schemas/build", json={"data": data})
         assert response.status_code == 200
         result = response.json()
         assert result["schema_content"]["type"] == "object"
@@ -165,7 +165,7 @@ class TestBuildEndpoint:
     @pytest.mark.asyncio
     async def test_build_empty_list_returns_400_error(self, client: AsyncClient):
         data = []
-        response = await client.post("/schemas/build", json=data)
+        response = await client.post("/schemas/build", json={"data": data})
         assert response.status_code == 400
         result = response.json()
         assert "error" in result
@@ -175,7 +175,7 @@ class TestBuildEndpoint:
     @pytest.mark.asyncio
     async def test_build_with_non_objects_returns_400_error(self, client: AsyncClient):
         data = ["string1", "string2"]
-        response = await client.post("/schemas/build", json=data)
+        response = await client.post("/schemas/build", json={"data": data})
         assert response.status_code == 400
         result = response.json()
         assert "error" in result
@@ -184,7 +184,7 @@ class TestBuildEndpoint:
     @pytest.mark.asyncio
     async def test_build_with_mixed_types_returns_400_error(self, client: AsyncClient):
         data = [{"name": "John"}, "not an object", 42]
-        response = await client.post("/schemas/build", json=data)
+        response = await client.post("/schemas/build", json={"data": data})
         assert response.status_code == 400
         result = response.json()
         assert "error" in result
@@ -198,7 +198,7 @@ class TestBuildEndpoint:
             {"user": {"name": "Jane"}},
             {"product": {"id": 123}},
         ]
-        response = await client.post("/schemas/build", json=data)
+        response = await client.post("/schemas/build", json={"data": data})
         assert response.status_code == 200
         result = response.json()
         assert "analysis" in result
@@ -206,7 +206,7 @@ class TestBuildEndpoint:
     @pytest.mark.asyncio
     async def test_build_response_includes_validation_result(self, client: AsyncClient):
         data = [{"name": "John", "age": 30}, {"name": "Jane", "age": 25}]
-        response = await client.post("/schemas/build", json=data)
+        response = await client.post("/schemas/build", json={"data": data})
         assert response.status_code == 200
         result = response.json()
         assert "validation" in result
@@ -216,7 +216,7 @@ class TestBuildEndpoint:
     @pytest.mark.asyncio
     async def test_build_response_includes_score(self, client: AsyncClient):
         data = [{"name": "John", "age": 30}, {"name": "Jane", "age": 25}]
-        response = await client.post("/schemas/build", json=data)
+        response = await client.post("/schemas/build", json={"data": data})
         assert response.status_code == 200
         result = response.json()
         assert "score" in result
@@ -227,7 +227,7 @@ class TestBuildEndpoint:
     @pytest.mark.asyncio
     async def test_build_with_arrays_in_objects_returns_400_error(self, client: AsyncClient):
         data = [[1, 2, 3], [4, 5, 6]]
-        response = await client.post("/schemas/build", json=data)
+        response = await client.post("/schemas/build", json={"data": data})
         assert response.status_code == 400
         result = response.json()
         assert "error" in result
@@ -235,7 +235,7 @@ class TestBuildEndpoint:
     @pytest.mark.asyncio
     async def test_build_with_single_object_works(self, client: AsyncClient):
         data = [{"name": "John", "age": 30}]
-        response = await client.post("/schemas/build", json=data)
+        response = await client.post("/schemas/build", json={"data": data})
         assert response.status_code == 200
         result = response.json()
         assert result["schema_content"]["type"] == "object"
@@ -251,7 +251,7 @@ class TestAnalyzeEndpoint:
             {"name": "Jane", "age": 25},
             {"name": "Bob", "age": 35},
         ]
-        response = await client.post("/schemas/analyze", json=data)
+        response = await client.post("/schemas/analyze", json={"data": data})
         assert response.status_code == 200
         result = response.json()
         assert "unique_structures" in result
@@ -265,7 +265,7 @@ class TestAnalyzeEndpoint:
             {"product": {"id": 123, "price": 99.99}},
             {"config": {"version": "1.0", "debug": True}},
         ]
-        response = await client.post("/schemas/analyze", json=data)
+        response = await client.post("/schemas/analyze", json={"data": data})
         assert response.status_code == 200
         result = response.json()
         assert "unique_structures" in result
@@ -274,7 +274,7 @@ class TestAnalyzeEndpoint:
     @pytest.mark.asyncio
     async def test_analyze_empty_list_returns_400_error(self, client: AsyncClient):
         data = []
-        response = await client.post("/schemas/analyze", json=data)
+        response = await client.post("/schemas/analyze", json={"data": data})
         assert response.status_code == 400
         result = response.json()
         assert "error" in result
@@ -282,16 +282,16 @@ class TestAnalyzeEndpoint:
 
     @pytest.mark.asyncio
     async def test_analyze_non_array_returns_400_error(self, client: AsyncClient):
-        data = {"name": "not an array"}
-        response = await client.post("/schemas/analyze", json=data)
-        assert response.status_code == 422
+        response = await client.post("/schemas/analyze", json={"data": {"name": "not an array"}})
+        assert response.status_code == 400
         result = response.json()
-        assert "detail" in result
+        assert "error" in result
+        assert "message" in result
 
     @pytest.mark.asyncio
     async def test_analyze_returns_should_split_schemas_recommendation(self, client: AsyncClient):
         data = [{"user": {"name": "John"}}, {"product": {"id": 123}}]
-        response = await client.post("/schemas/analyze", json=data)
+        response = await client.post("/schemas/analyze", json={"data": data})
         assert response.status_code == 200
         result = response.json()
         assert "should_split_schemas" in result
@@ -300,7 +300,7 @@ class TestAnalyzeEndpoint:
     @pytest.mark.asyncio
     async def test_analyze_returns_total_objects_count(self, client: AsyncClient):
         data = [{"name": "John"}, {"name": "Jane"}, {"name": "Bob"}]
-        response = await client.post("/schemas/analyze", json=data)
+        response = await client.post("/schemas/analyze", json={"data": data})
         assert response.status_code == 200
         result = response.json()
         assert "total_objects" in result
@@ -309,7 +309,7 @@ class TestAnalyzeEndpoint:
     @pytest.mark.asyncio
     async def test_analyze_returns_recommendation_string(self, client: AsyncClient):
         data = [{"user": {"name": "John"}}, {"product": {"id": 123}}]
-        response = await client.post("/schemas/analyze", json=data)
+        response = await client.post("/schemas/analyze", json={"data": data})
         assert response.status_code == 200
         result = response.json()
         assert "recommendation" in result
@@ -318,7 +318,7 @@ class TestAnalyzeEndpoint:
     @pytest.mark.asyncio
     async def test_analyze_returns_confidence_level(self, client: AsyncClient):
         data = [{"name": "John"}, {"name": "Jane"}]
-        response = await client.post("/schemas/analyze", json=data)
+        response = await client.post("/schemas/analyze", json={"data": data})
         assert response.status_code == 200
         result = response.json()
         assert "confidence" in result
@@ -333,7 +333,7 @@ class TestScoreEndpoint:
             "properties": {"name": {"type": "string"}, "age": {"type": "integer"}},
         }
 
-        response = await client.post("/schemas/score", json=schema)
+        response = await client.post("/schemas/score", json={"schema": schema})
         assert response.status_code == 200
         result = response.json()
         assert "total_score" in result
@@ -343,7 +343,7 @@ class TestScoreEndpoint:
     @pytest.mark.asyncio
     async def test_score_empty_schema_returns_400_error(self, client: AsyncClient):
         schema = {}
-        response = await client.post("/schemas/score", json=schema)
+        response = await client.post("/schemas/score", json={"schema": schema})
         assert response.status_code == 400
         result = response.json()
         assert "error" in result
@@ -359,7 +359,7 @@ class TestScoreEndpoint:
             },
             "additionalProperties": False,
         }
-        response = await client.post("/schemas/score", json=schema)
+        response = await client.post("/schemas/score", json={"schema": schema})
         assert response.status_code == 200
         result = response.json()
         breakdown = result["breakdown"]
@@ -383,8 +383,8 @@ class TestScoreEndpoint:
             "properties": {"name": {"type": "string"}, "age": {"type": "integer"}},
         }
 
-        strict_response = await client.post("/schemas/score", json=strict_schema)
-        loose_response = await client.post("/schemas/score", json=loose_schema)
+        strict_response = await client.post("/schemas/score", json={"schema": strict_schema})
+        loose_response = await client.post("/schemas/score", json={"schema": loose_schema})
         assert strict_response.status_code == 200
         assert loose_response.status_code == 200
         strict_score = strict_response.json()["total_score"]
@@ -402,7 +402,7 @@ class TestScoreEndpoint:
                 }
             },
         }
-        response = await client.post("/schemas/score", json=schema)
+        response = await client.post("/schemas/score", json={"schema": schema})
         assert response.status_code == 200
         result = response.json()
         assert result["breakdown"]["strictness"] > 0
@@ -556,7 +556,7 @@ class TestErrorHandling:
 
     @pytest.mark.asyncio
     async def test_error_response_has_expected_structure(self, client: AsyncClient):
-        response = await client.post("/schemas/build", json=[])
+        response = await client.post("/schemas/build", json={"data": []})
         assert response.status_code == 400
         result = response.json()
         assert "error" in result
@@ -564,7 +564,7 @@ class TestErrorHandling:
 
     @pytest.mark.asyncio
     async def test_score_non_dict_schema_returns_error(self, client: AsyncClient):
-        response = await client.post("/schemas/score", json="not a schema")
+        response = await client.post("/schemas/score", json={"schema": "not a schema"})
         assert response.status_code in [400, 422]
 
 
@@ -613,7 +613,7 @@ class TestEdgeCases:
             {"name": "Jane", "age": 25},
             {"name": "Bob"},
         ]
-        response = await client.post("/schemas/build", json=data)
+        response = await client.post("/schemas/build", json={"data": data})
         assert response.status_code == 200
         result = response.json()
         props = result["schema_content"]["properties"]
@@ -647,7 +647,7 @@ class TestEdgeCases:
             "required": ["id", "name"],
             "additionalProperties": False,
         }
-        response = await client.post("/schemas/score", json=schema)
+        response = await client.post("/schemas/score", json={"schema": schema})
         assert response.status_code == 200
         result = response.json()
         assert result["total_score"] > 0
@@ -698,7 +698,7 @@ class TestEdgeCases:
     @pytest.mark.asyncio
     async def test_analyze_single_object(self, client: AsyncClient):
         data = [{"name": "John", "age": 30}]
-        response = await client.post("/schemas/analyze", json=data)
+        response = await client.post("/schemas/analyze", json={"data": data})
         assert response.status_code == 200
         result = response.json()
         assert result["total_objects"] == 1

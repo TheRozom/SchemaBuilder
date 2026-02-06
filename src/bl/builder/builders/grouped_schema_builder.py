@@ -3,6 +3,7 @@ from typing import Any, Dict, List, Optional, Tuple
 from src.bl.analyzer import SchemaAnalyzer
 from src.bl.builder.inferrers import SchemaInferrer
 from src.bl.builder.mergers import SchemaMerger
+from src.bl.builder.normalizers import BoundNormalizer
 from src.core import get_logger, load_yaml_config
 from src.shared.exceptions import InputValidationError
 from src.shared.models import AnalysisResult, SchemaKeyword, SchemaNode
@@ -16,6 +17,7 @@ class GroupedSchemaBuilder:
         self.analyzer = SchemaAnalyzer()
         self.inferrer = SchemaInferrer()
         self.merger = SchemaMerger()
+        self.normalizer = BoundNormalizer()
 
     async def build_schema(
         self, data_list: List[Any]
@@ -83,7 +85,10 @@ class GroupedSchemaBuilder:
 
         if merged_schema is None:
             return {}
-        return merged_schema.to_dict() if isinstance(merged_schema, SchemaNode) else merged_schema
+        if isinstance(merged_schema, SchemaNode):
+            self.normalizer.normalize_bounds(merged_schema)
+            return merged_schema.to_dict()
+        return merged_schema
 
     def _build_anyof_schema(self, data_list: List[Any], analysis: AnalysisResult) -> Dict[str, Any]:
         group_schemas = []

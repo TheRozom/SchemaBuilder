@@ -30,8 +30,8 @@ class TestGenerateSchemaIntegerInference:
         result = service.generate_schema(42)
         schema = result.schema_content
         assert schema["type"] == "integer"
-        assert schema["minimum"] == 42
-        assert schema["maximum"] == 42
+        assert schema["minimum"] == 40
+        assert schema["maximum"] == 45
 
     def test_integer_zero(self):
         service = SchemaBuilderService()
@@ -210,8 +210,8 @@ class TestPrimitiveTypes:
         service = SchemaBuilderService()
         result = service.generate_schema(3.14)
         assert result.schema_content["type"] == "number"
-        assert result.schema_content["minimum"] == 3.14
-        assert result.schema_content["maximum"] == 3.14
+        assert result.schema_content["minimum"] == 3.0
+        assert result.schema_content["maximum"] == 4.0
 
 
 class TestComplexScenarios:

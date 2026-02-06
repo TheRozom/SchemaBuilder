@@ -39,6 +39,12 @@ class ServiceConfig:
         return SchemaMerger()
 
     @cached_property
+    def bound_normalizer(self):
+        from src.bl.builder.normalizers import BoundNormalizer
+
+        return BoundNormalizer()
+
+    @cached_property
     def error_formatter(self):
         from src.bl.validator.formatters import ErrorFormatter
 
@@ -74,6 +80,7 @@ class ServiceConfig:
             "similarity_calculator",
             "summary_generator",
             "schema_merger",
+            "bound_normalizer",
             "error_formatter",
             "scoring_rule_registry",
         ]:

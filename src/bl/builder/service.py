@@ -7,6 +7,7 @@ from src.shared.models import AnalysisResult, SchemaNode
 
 from .builders import GroupedSchemaBuilder
 from .inferrers import SchemaInferrer
+from .normalizers import BoundNormalizer
 
 logger = get_logger(__name__)
 
@@ -19,6 +20,7 @@ class SchemaBuilderService:
     ):
         self.inferrer = inferrer or SchemaInferrer()
         self.grouped_builder = grouped_builder or GroupedSchemaBuilder()
+        self.normalizer = BoundNormalizer()
         logger.debug("SchemaBuilderService initialized")
 
     def generate_schema(self, data: Any) -> SchemaDefinition:
@@ -34,6 +36,8 @@ class SchemaBuilderService:
                     len(self.inferrer.unknown_samples),
                 )
 
+            if isinstance(schema, SchemaNode):
+                self.normalizer.normalize_bounds(schema)
             schema_dict = schema.to_dict() if isinstance(schema, SchemaNode) else schema
             logger.info("Schema generation completed successfully")
 
