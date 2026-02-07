@@ -1,6 +1,10 @@
+from unittest.mock import patch
+
 import pytest
+from jsonschema import Draft7Validator
 
 from src.bl.generator import MockDataGenerator
+from src.shared.exceptions import MockDataGenerationError
 
 
 class TestMockDataGenerator:
@@ -327,3 +331,151 @@ class TestMockDataGenerator:
         gen2 = MockDataGenerator(seed=99)
         result2 = gen2.generate_from_schema(schema, count=1)
         assert result1["nested"] == result2["nested"]
+
+
+class TestMockDataValidation:
+    @pytest.fixture
+    def generator(self):
+        return MockDataGenerator()
+
+    def test_generated_data_validates_against_schema(self, generator):
+        schema = {
+            "type": "object",
+            "properties": {
+                "name": {"type": "string", "minLength": 1, "maxLength": 50},
+                "age": {"type": "integer", "minimum": 0, "maximum": 150},
+                "active": {"type": "boolean"},
+            },
+            "required": ["name", "age", "active"],
+            "additionalProperties": False,
+        }
+        results = generator.generate_from_schema(schema, count=20)
+        validator = Draft7Validator(schema)
+        for record in results:
+            errors = list(validator.iter_errors(record))
+            assert not errors, f"Validation errors: {[e.message for e in errors]}"
+
+    def test_generated_data_with_patterns_validates(self, generator):
+        schema = {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "pattern": r"^[A-Z]{3}-\d{4}$",
+                },
+                "hex": {
+                    "type": "string",
+                    "pattern": r"^[0-9a-f]+$",
+                },
+            },
+            "required": ["code", "hex"],
+            "additionalProperties": False,
+        }
+        results = generator.generate_from_schema(schema, count=20)
+        validator = Draft7Validator(schema)
+        for record in results:
+            errors = list(validator.iter_errors(record))
+            assert not errors, f"Validation errors: {[e.message for e in errors]}"
+
+    def test_generated_data_with_enum_validates(self, generator):
+        schema = {
+            "type": "object",
+            "properties": {
+                "status": {"type": "string", "enum": ["active", "inactive"]},
+                "count": {"type": "integer", "minimum": 0, "maximum": 10},
+            },
+            "required": ["status", "count"],
+            "additionalProperties": False,
+        }
+        results = generator.generate_from_schema(schema, count=20)
+        validator = Draft7Validator(schema)
+        for record in results:
+            errors = list(validator.iter_errors(record))
+            assert not errors, f"Validation errors: {[e.message for e in errors]}"
+
+    def test_generated_data_with_nested_objects_validates(self, generator):
+        schema = {
+            "type": "object",
+            "properties": {
+                "user": {
+                    "type": "object",
+                    "properties": {
+                        "name": {"type": "string"},
+                        "age": {"type": "integer", "minimum": 0},
+                    },
+                    "required": ["name", "age"],
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {"type": "string"},
+                    "minItems": 1,
+                    "maxItems": 3,
+                },
+            },
+            "required": ["user", "tags"],
+            "additionalProperties": False,
+        }
+        results = generator.generate_from_schema(schema, count=10)
+        validator = Draft7Validator(schema)
+        for record in results:
+            errors = list(validator.iter_errors(record))
+            assert not errors, f"Validation errors: {[e.message for e in errors]}"
+
+    def test_retry_produces_valid_record_after_initial_failure(self):
+        generator = MockDataGenerator()
+        call_count = 0
+        original_generate = generator._generate_single_record
+
+        def flaky_generate(schema):
+            nonlocal call_count
+            call_count += 1
+            if call_count <= 2:
+                return {"name": 12345}
+            return original_generate(schema)
+
+        schema = {
+            "type": "object",
+            "properties": {"name": {"type": "string"}},
+            "required": ["name"],
+            "additionalProperties": False,
+        }
+
+        with patch.object(generator, "_generate_single_record", side_effect=flaky_generate):
+            result = generator.generate_from_schema(schema, count=1)
+
+        assert isinstance(result["name"], str)
+        assert call_count == 3
+
+    def test_raises_error_when_all_retries_fail(self):
+        generator = MockDataGenerator()
+
+        schema = {
+            "type": "object",
+            "properties": {"name": {"type": "string"}},
+            "required": ["name"],
+            "additionalProperties": False,
+        }
+
+        with (
+            patch.object(generator, "_generate_single_record", return_value={"name": 12345}),
+            pytest.raises(MockDataGenerationError) as exc_info,
+        ):
+            generator.generate_from_schema(schema, count=1)
+
+        assert "Failed to generate valid mock data" in str(exc_info.value)
+        assert exc_info.value.validation_errors
+
+    def test_generated_data_with_anyof_validates(self, generator):
+        schema = {
+            "type": "object",
+            "properties": {
+                "value": {"anyOf": [{"type": "string"}, {"type": "integer"}]},
+            },
+            "required": ["value"],
+            "additionalProperties": False,
+        }
+        results = generator.generate_from_schema(schema, count=20)
+        validator = Draft7Validator(schema)
+        for record in results:
+            errors = list(validator.iter_errors(record))
+            assert not errors, f"Validation errors: {[e.message for e in errors]}"

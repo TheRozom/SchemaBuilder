@@ -1,16 +1,14 @@
-import random
 from typing import Any
 
 from faker import Faker
 
-from src.bl.generator.config import get_default_ranges, get_field_name_keywords
 from src.bl.generator.strategies.base import ValueGenerationStrategy
+from src.core.pattern_registry import FIELD_NAME_MAPPINGS
 
 
 class FieldNameStrategy(ValueGenerationStrategy):
     def __init__(self, faker: Faker):
         self.faker = faker
-        self._defaults = get_default_ranges()
 
     def can_generate(self, field_name: str, field_schema: dict[str, Any]) -> bool:
         return True
@@ -18,31 +16,25 @@ class FieldNameStrategy(ValueGenerationStrategy):
     def generate(self, field_name: str, field_schema: dict[str, Any]) -> Any | None:
         field_lower = field_name.lower()
 
-        for config in get_field_name_keywords():
-            keywords = config.get("keywords", [])
-            match_all = config.get("match_all", False)
-
-            if match_all:
-                matches = all(kw in field_lower for kw in keywords)
+        for mapping in FIELD_NAME_MAPPINGS:
+            if mapping.match_all:
+                matches = all(kw in field_lower for kw in mapping.keywords)
             else:
-                matches = any(kw in field_lower for kw in keywords)
+                matches = any(kw in field_lower for kw in mapping.keywords)
 
             if matches:
-                generator = config.get("generator")
-                if generator:
-                    args = config.get("args", {})
-                    if generator == "random_int":
-                        return random.randint(args.get("min_val", 0), args.get("max_val", 100))
-                    elif generator == "random_year":
-                        return random.randint(self._defaults.year_min, self._defaults.year_max)
+                value = mapping.generator(self.faker)
+                return self._enforce_string_length(value, field_schema)
 
-                faker_method = config.get("faker_method")
-                if faker_method and hasattr(self.faker, faker_method):
-                    method = getattr(self.faker, faker_method)
-                    faker_args = config.get("faker_args", {})
-                    result = method(**faker_args) if faker_args else method()
-                    if config.get("post_process") == "strip_period" and isinstance(result, str):
-                        result = result.rstrip(".")
-                    return result
+        return self._enforce_string_length(self.faker.word(), field_schema)
 
-        return self.faker.word()
+    def _enforce_string_length(self, value: Any, field_schema: dict[str, Any]) -> Any:
+        if not isinstance(value, str):
+            return value
+        min_len = field_schema.get("minLength")
+        max_len = field_schema.get("maxLength")
+        if max_len is not None and len(value) > max_len:
+            value = value[:max_len]
+        if min_len is not None and len(value) < min_len:
+            value += self.faker.lexify("?" * (min_len - len(value)))
+        return value

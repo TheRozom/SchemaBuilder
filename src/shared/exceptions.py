@@ -129,6 +129,25 @@ class ScoringError(SchemaBuilderError):
         return result
 
 
+class MockDataGenerationError(SchemaBuilderError):
+    def __init__(
+        self,
+        message: str,
+        validation_errors: list[str] | None = None,
+        details: dict[str, Any] | None = None,
+    ) -> None:
+        self.validation_errors = validation_errors or []
+        super().__init__(message, details)
+
+    def to_dict(self) -> dict[str, Any]:
+        result = super().to_dict()
+
+        if self.validation_errors:
+            result["validation_errors"] = self.validation_errors
+
+        return result
+
+
 class InputValidationError(SchemaBuilderError):
     def __init__(
         self,

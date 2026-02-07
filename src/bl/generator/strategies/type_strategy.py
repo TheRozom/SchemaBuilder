@@ -57,14 +57,10 @@ class TypeStrategy(ValueGenerationStrategy):
         else:
             value = self.faker.word()
 
-        if min_len > len(value):
-            padding_needed = min_len - len(value)
-            if padding_needed >= 5:
-                value += self.faker.text(max_nb_chars=padding_needed)
-            else:
-                value += self.faker.lexify("?" * padding_needed)
-        elif len(value) > max_len:
+        if len(value) > max_len:
             value = value[:max_len]
+        if len(value) < min_len:
+            value += self.faker.lexify("?" * (min_len - len(value)))
 
         return value
 

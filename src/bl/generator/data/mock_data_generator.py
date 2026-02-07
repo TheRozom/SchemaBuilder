@@ -2,6 +2,7 @@ import random
 from typing import Any
 
 from faker import Faker
+from jsonschema import Draft7Validator
 
 from src.bl.generator.config import get_default_ranges
 from src.bl.generator.strategies import (
@@ -13,6 +14,9 @@ from src.bl.generator.strategies import (
     ValueGenerationStrategy,
 )
 from src.core import get_logger
+from src.shared.exceptions import MockDataGenerationError
+
+MAX_VALIDATION_RETRIES = 5
 
 
 class MockDataGenerator:
@@ -50,9 +54,31 @@ class MockDataGenerator:
         if count > 10000:
             raise ValueError("count exceeds maximum allowed value of 10000")
 
+        validator = Draft7Validator(schema)
+
         if count == 1:
-            return self._generate_single_record(schema)
-        return [self._generate_single_record(schema) for _ in range(count)]
+            return self._generate_valid_record(schema, validator)
+        return [self._generate_valid_record(schema, validator) for _ in range(count)]
+
+    def _generate_valid_record(
+        self, schema: dict[str, Any], validator: Draft7Validator
+    ) -> dict[str, Any]:
+        last_errors = []
+        for attempt in range(MAX_VALIDATION_RETRIES):
+            record = self._generate_single_record(schema)
+            last_errors = list(validator.iter_errors(record))
+            if not last_errors:
+                return record
+            self.logger.debug(
+                "Generated record failed validation (attempt %d/%d): %s",
+                attempt + 1,
+                MAX_VALIDATION_RETRIES,
+                [e.message for e in last_errors],
+            )
+        raise MockDataGenerationError(
+            message=f"Failed to generate valid mock data after {MAX_VALIDATION_RETRIES} attempts",
+            validation_errors=[e.message for e in last_errors],
+        )
 
     def _resolve_top_level_composition(self, schema: dict[str, Any]) -> dict[str, Any]:
         if "properties" in schema:

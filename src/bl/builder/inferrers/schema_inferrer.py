@@ -1,10 +1,10 @@
 from collections.abc import Callable
 from typing import Any
 
-from src.bl.builder.config import PATTERN_REGISTRY
 from src.bl.builder.mergers import SchemaMerger
 from src.core import get_logger
 from src.core.config import settings
+from src.core.pattern_registry import PATTERN_REGISTRY
 from src.shared.models import SchemaNode, SchemaType
 from src.shared.utils import (
     get_type_name,
@@ -70,16 +70,14 @@ class SchemaInferrer:
 
         matches = []
 
-        for name, pattern in PATTERN_REGISTRY.items():
-            if pattern.match(data):
-                matches.append((name, pattern))
+        for defn in PATTERN_REGISTRY.values():
+            if defn.regex.match(data):
+                matches.append(defn)
 
         if matches:
-            best_name, best_pattern = max(
-                matches, key=lambda m: self._pattern_specificity(m[1].pattern)
-            )
-            schema.pattern = best_pattern.pattern
-            logger.debug("Matched pattern '%s' for path '%s'", best_name, path)
+            best = max(matches, key=lambda d: d.priority)
+            schema.pattern = best.regex.pattern
+            logger.debug("Matched pattern '%s' for path '%s'", best.name, path)
 
         if not matches:
             if path not in self.unknown_samples:
@@ -94,10 +92,6 @@ class SchemaInferrer:
                 self.unknown_samples[path].append(data)
 
         return schema
-
-    def _pattern_specificity(self, pattern: str) -> tuple[bool, int]:
-        has_open_quantifier = "+" in pattern or "*" in pattern
-        return (not has_open_quantifier, len(pattern))
 
     def _infer_array(self, data: list[Any], path: str) -> SchemaNode:
         schema = SchemaNode(type=SchemaType.ARRAY, minItems=0, maxItems=len(data))

@@ -149,12 +149,12 @@ class TestSchemaInferrerUnknownStrings:
 
     def test_unknown_strings_different_paths(self):
         inferrer = SchemaInferrer()
-        inferrer.infer("value1", path="field1")
-        inferrer.infer("value2", path="field2")
+        inferrer.infer("value_1", path="field1")
+        inferrer.infer("value_2", path="field2")
         assert "field1" in inferrer.unknown_samples
         assert "field2" in inferrer.unknown_samples
-        assert "value1" in inferrer.unknown_samples["field1"]
-        assert "value2" in inferrer.unknown_samples["field2"]
+        assert "value_1" in inferrer.unknown_samples["field1"]
+        assert "value_2" in inferrer.unknown_samples["field2"]
 
     def test_duplicate_unknown_string_not_added(self):
         inferrer = SchemaInferrer()
@@ -431,8 +431,8 @@ class TestSchemaInferrerEdgeCases:
 
     def test_multiple_inferences_share_unknown_samples(self):
         inferrer = SchemaInferrer()
-        inferrer.infer({"field1": "value1"})
-        inferrer.infer({"field2": "value2"})
+        inferrer.infer({"field1": "value_1"})
+        inferrer.infer({"field2": "value_2"})
         assert "field1" in inferrer.unknown_samples
         assert "field2" in inferrer.unknown_samples
 
