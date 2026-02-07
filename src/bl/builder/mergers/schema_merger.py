@@ -144,10 +144,8 @@ class SchemaMerger:
                         ),
                     ]
                 )
-        elif first_pattern:
-            merged_schema.pattern = first_pattern
-        elif second_pattern:
-            merged_schema.pattern = second_pattern
+        elif first_pattern or second_pattern:
+            pass
 
         return merged_schema
 

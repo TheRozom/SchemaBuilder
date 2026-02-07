@@ -36,14 +36,14 @@ class TestSchemaMergerStrings:
         assert r"^[a-z]+$" in patterns
         assert r"^\d+$" in patterns
 
-    def test_merge_strings_one_with_pattern_one_without_keeps_pattern(self):
+    def test_merge_strings_one_with_pattern_one_without_drops_pattern(self):
         merger = SchemaMerger()
         first = SchemaNode(type=SchemaType.STRING, maxLength=10, pattern=r"^[a-z]+$")
 
         second = SchemaNode(type=SchemaType.STRING, maxLength=15)
         result = merger.merge(first, second)
         assert result.type == SchemaType.STRING
-        assert result.pattern == r"^[a-z]+$"
+        assert result.pattern is None
 
 
 class TestSchemaMergerIntegers:

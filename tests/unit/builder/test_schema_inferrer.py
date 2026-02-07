@@ -24,7 +24,7 @@ class TestSchemaInferrerPrimitiveTypes:
         inferrer = SchemaInferrer()
         schema = inferrer.infer(42)
         assert schema.type == SchemaType.INTEGER
-        assert schema.minimum == 42
+        assert schema.minimum == 0
         assert schema.maximum == 42
 
     def test_infer_integer_zero(self):
@@ -38,14 +38,14 @@ class TestSchemaInferrerPrimitiveTypes:
         inferrer = SchemaInferrer()
         schema = inferrer.infer(999999)
         assert schema.type == SchemaType.INTEGER
-        assert schema.minimum == 999999
+        assert schema.minimum == 0
         assert schema.maximum == 999999
 
     def test_infer_float(self):
         inferrer = SchemaInferrer()
         schema = inferrer.infer(3.14)
         assert schema.type == SchemaType.NUMBER
-        assert schema.minimum == 3.14
+        assert schema.minimum == 0
         assert schema.maximum == 3.14
 
     def test_infer_float_zero(self):
@@ -135,17 +135,17 @@ class TestSchemaInferrerPatternSpecificity:
 class TestSchemaInferrerUnknownStrings:
     def test_unknown_string_collected(self):
         inferrer = SchemaInferrer()
-        inferrer.infer("random text", path="field1")
+        inferrer.infer("random_text", path="field1")
         assert "field1" in inferrer.unknown_samples
-        assert "random text" in inferrer.unknown_samples["field1"]
+        assert "random_text" in inferrer.unknown_samples["field1"]
 
     def test_unknown_strings_same_path(self):
         inferrer = SchemaInferrer()
-        inferrer.infer("first value", path="field1")
-        inferrer.infer("second value", path="field1")
+        inferrer.infer("first_value", path="field1")
+        inferrer.infer("second_value", path="field1")
         assert "field1" in inferrer.unknown_samples
-        assert "first value" in inferrer.unknown_samples["field1"]
-        assert "second value" in inferrer.unknown_samples["field1"]
+        assert "first_value" in inferrer.unknown_samples["field1"]
+        assert "second_value" in inferrer.unknown_samples["field1"]
 
     def test_unknown_strings_different_paths(self):
         inferrer = SchemaInferrer()
@@ -158,8 +158,8 @@ class TestSchemaInferrerUnknownStrings:
 
     def test_duplicate_unknown_string_not_added(self):
         inferrer = SchemaInferrer()
-        inferrer.infer("same value", path="field1")
-        inferrer.infer("same value", path="field1")
+        inferrer.infer("same_value", path="field1")
+        inferrer.infer("same_value", path="field1")
         assert len(inferrer.unknown_samples["field1"]) == 1
 
     def test_pattern_matched_string_not_collected(self):
@@ -288,32 +288,32 @@ class TestSchemaInferrerObjects:
 class TestSchemaInferrerPathTracking:
     def test_path_empty_at_root(self):
         inferrer = SchemaInferrer()
-        inferrer.infer("unknown string")
+        inferrer.infer("unknown_str1ng")
         assert "" in inferrer.unknown_samples
 
     def test_path_tracking_object_properties(self):
         inferrer = SchemaInferrer()
-        inferrer.infer({"name": "unknown value"})
+        inferrer.infer({"name": "unknown_value1"})
         assert "name" in inferrer.unknown_samples
 
     def test_path_tracking_nested_object(self):
         inferrer = SchemaInferrer()
-        inferrer.infer({"user": {"name": "unknown value"}})
+        inferrer.infer({"user": {"name": "unknown_value1"}})
         assert "user.name" in inferrer.unknown_samples
 
     def test_path_tracking_deeply_nested(self):
         inferrer = SchemaInferrer()
-        inferrer.infer({"level1": {"level2": {"level3": "unknown value"}}})
+        inferrer.infer({"level1": {"level2": {"level3": "unknown_value1"}}})
         assert "level1.level2.level3" in inferrer.unknown_samples
 
     def test_path_tracking_array_items(self):
         inferrer = SchemaInferrer()
-        inferrer.infer(["unknown string"], path="items")
+        inferrer.infer(["unknown_str1ng"], path="items")
         assert "items[]" in inferrer.unknown_samples
 
     def test_path_tracking_array_of_objects(self):
         inferrer = SchemaInferrer()
-        inferrer.infer({"users": [{"name": "unknown value"}]})
+        inferrer.infer({"users": [{"name": "unknown_value1"}]})
         assert "users[].name" in inferrer.unknown_samples
 
 
@@ -335,7 +335,7 @@ class TestSchemaInferrerToDict:
         schema = inferrer.infer(100)
         result = schema.to_dict()
         assert result["type"] == "integer"
-        assert result["minimum"] == 100
+        assert result["minimum"] == 0
         assert result["maximum"] == 100
 
     def test_to_dict_string_with_pattern(self):
@@ -438,7 +438,7 @@ class TestSchemaInferrerEdgeCases:
 
     def test_infer_with_custom_path(self):
         inferrer = SchemaInferrer()
-        inferrer.infer("custom value", path="custom.path")
+        inferrer.infer("custom_value1", path="custom.path")
         assert "custom.path" in inferrer.unknown_samples
 
     def test_schema_node_is_returned(self):

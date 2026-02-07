@@ -31,7 +31,7 @@ def test_integer_constraints(service):
     schema = service.generate_schema(data)
     s = schema.schema_content
     assert s["type"] == "integer"
-    assert s["minimum"] == 10
+    assert s["minimum"] == 0
     assert s["maximum"] == 10
 
 
@@ -51,7 +51,7 @@ def test_list_merging_integers(service):
     assert s["minItems"] == 0
     assert s["maxItems"] == 2
     assert s["items"]["type"] == "integer"
-    assert s["items"]["minimum"] == 5
+    assert s["items"]["minimum"] == 0
     assert s["items"]["maximum"] == 15
 
 

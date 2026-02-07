@@ -24,8 +24,8 @@ patterns:
     description: "ISO datetime pattern"
     flags: []
   english_words:
-    regex: "^[A-Za-z]+$"
-    description: "Pattern for English words containing only alphabetic characters"
+    regex: "^[A-Za-z ]+$"
+    description: "Pattern for English words containing only alphabetic characters and space"
     flags: ["IGNORECASE"]
   numbers_only:
     regex: "^[0-9]+$"

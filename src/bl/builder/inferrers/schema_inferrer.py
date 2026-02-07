@@ -60,10 +60,10 @@ class SchemaInferrer:
         return SchemaNode(type=SchemaType.BOOLEAN)
 
     def _handle_int(self, data: int, path: str) -> SchemaNode:
-        return SchemaNode(type=SchemaType.INTEGER, minimum=data, maximum=data)
+        return SchemaNode(type=SchemaType.INTEGER, minimum=min(0, data), maximum=data)
 
     def _handle_float(self, data: float, path: str) -> SchemaNode:
-        return SchemaNode(type=SchemaType.NUMBER, minimum=data, maximum=data)
+        return SchemaNode(type=SchemaType.NUMBER, minimum=min(0, data), maximum=data)
 
     def _infer_string(self, data: str, path: str) -> SchemaNode:
         schema = SchemaNode(type=SchemaType.STRING, minLength=0, maxLength=len(data))
