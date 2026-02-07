@@ -68,16 +68,20 @@ class SchemaInferrer:
     def _infer_string(self, data: str, path: str) -> SchemaNode:
         schema = SchemaNode(type=SchemaType.STRING, minLength=0, maxLength=len(data))
 
-        matched = False
+        matches = []
 
         for name, pattern in PATTERN_REGISTRY.items():
             if pattern.match(data):
-                schema.pattern = pattern.pattern
-                logger.debug("Matched pattern '%s' for path '%s'", name, path)
-                matched = True
-                break
+                matches.append((name, pattern))
 
-        if not matched:
+        if matches:
+            best_name, best_pattern = max(
+                matches, key=lambda m: self._pattern_specificity(m[1].pattern)
+            )
+            schema.pattern = best_pattern.pattern
+            logger.debug("Matched pattern '%s' for path '%s'", best_name, path)
+
+        if not matches:
             if path not in self.unknown_samples:
                 self.unknown_samples[path] = []
 
@@ -90,6 +94,10 @@ class SchemaInferrer:
                 self.unknown_samples[path].append(data)
 
         return schema
+
+    def _pattern_specificity(self, pattern: str) -> tuple[bool, int]:
+        has_open_quantifier = "+" in pattern or "*" in pattern
+        return (not has_open_quantifier, len(pattern))
 
     def _infer_array(self, data: list[Any], path: str) -> SchemaNode:
         schema = SchemaNode(type=SchemaType.ARRAY, minItems=0, maxItems=len(data))

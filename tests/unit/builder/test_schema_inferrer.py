@@ -121,6 +121,17 @@ class TestSchemaInferrerStringPatterns:
         assert schema.pattern is not None
 
 
+class TestSchemaInferrerPatternSpecificity:
+    def test_five_digit_string_matches_zipcode_over_numbers_only(self):
+        from src.bl.builder.config import PATTERN_REGISTRY
+
+        inferrer = SchemaInferrer()
+        schema = inferrer.infer("12345")
+        assert schema.type == SchemaType.STRING
+        assert schema.pattern is not None
+        assert schema.pattern == PATTERN_REGISTRY["zipcode_us"].pattern
+
+
 class TestSchemaInferrerUnknownStrings:
     def test_unknown_string_collected(self):
         inferrer = SchemaInferrer()

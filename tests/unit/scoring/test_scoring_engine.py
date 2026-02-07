@@ -19,7 +19,6 @@ class TestScoringEngine:
         assert isinstance(result, ScoreResult)
         assert hasattr(result, "total_score")
         assert hasattr(result, "breakdown")
-        assert hasattr(result, "ai_score")
         assert isinstance(result.total_score, float)
         assert isinstance(result.breakdown, dict)
 
@@ -520,6 +519,20 @@ class TestSecurityRule:
         schema = {
             "type": "integer",
             "maximum": 10**20,
+        }
+        score = rule.evaluate(schema)
+        assert score == 0.0
+        assert rule.score_zero is True
+
+    @patch("src.bl.scoring.rules.security.settings")
+    def test_large_negative_minimum_sets_score_zero(self, mock_settings):
+        mock_settings.SECURITY_MAX_NESTING_DEPTH = 20
+        mock_settings.SECURITY_MAX_STRING_LENGTH = 256
+        mock_settings.SECURITY_MAX_INTEGER_DIGITS = 18
+        rule = SecurityRule()
+        schema = {
+            "type": "integer",
+            "minimum": -(10**20),
         }
         score = rule.evaluate(schema)
         assert score == 0.0

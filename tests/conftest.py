@@ -1,5 +1,3 @@
-from typing import Any
-
 import pytest
 
 from src.bl.analyzer import SchemaAnalyzer
@@ -8,39 +6,8 @@ from src.bl.scoring.engine.scoring_engine import ScoringEngine
 from src.bl.validator import SchemaValidator
 
 
-class MockAIService:
-    def __init__(self, score_response: int | None = 99):
-        self._score_response = score_response
-        self.evaluate_schema_calls: list[dict[str, Any]] = []
-
-    async def evaluate_schema(self, schema: dict[str, Any]) -> int | None:
-        self.evaluate_schema_calls.append(schema)
-
-        return self._score_response
-
-
-class FailingAIService:
-    async def evaluate_schema(self, schema: dict[str, Any]) -> int | None:
-        raise Exception("AI service unavailable")
-
-
-@pytest.fixture
-def mock_ai_service():
-    return MockAIService()
-
-
-@pytest.fixture
-def failing_ai_service():
-    return FailingAIService()
-
-
 @pytest.fixture
 def schema_service():
-    return SchemaBuilderService()
-
-
-@pytest.fixture
-def schema_service_no_ai():
     return SchemaBuilderService()
 
 

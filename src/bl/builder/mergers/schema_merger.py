@@ -1,27 +1,13 @@
 from typing import Any
 
+from src.core import get_logger
 from src.shared.models import SchemaKeyword, SchemaNode, SchemaType
+
+logger = get_logger(__name__)
 
 
 class SchemaMerger:
-    """
-    Merges multiple JSON Schema definitions into a single unified schema.
-
-    The merger combines schemas by type compatibility, using anyOf for incompatible
-    types and merging same-type schemas to create the most permissive valid schema.
-    """
-
     def merge(self, first_schema: SchemaNode, second_schema: SchemaNode) -> SchemaNode:
-        """
-        Merge two schema nodes into a unified schema.
-
-        Args:
-            first_schema: First schema to merge
-            second_schema: Second schema to merge
-
-        Returns:
-            Merged schema node, using anyOf if types are incompatible
-        """
         first_options = list(first_schema.anyOf) if first_schema.anyOf else [first_schema]
         second_options = list(second_schema.anyOf) if second_schema.anyOf else [second_schema]
 
@@ -56,31 +42,41 @@ class SchemaMerger:
                 return first_options[0]
             try:
                 return SchemaNode(**first_options[0])
-            except Exception:
+            except Exception as e:
+                logger.warning("Failed to create SchemaNode from merged result: %s", e)
                 return SchemaNode()
 
         return SchemaNode(anyOf=first_options)
+
+    def _merge_min(self, a: int | float | None, b: int | float | None) -> int | float | None:
+        if a is None and b is None:
+            return None
+        if a is None:
+            return b
+        if b is None:
+            return a
+        return min(a, b)
+
+    def _merge_max(self, a: int | float | None, b: int | float | None) -> int | float | None:
+        if a is None and b is None:
+            return None
+        if a is None:
+            return b
+        if b is None:
+            return a
+        return max(a, b)
 
     def _merge_same_type(
         self,
         first_schema: SchemaNode | dict[str, Any],
         second_schema: SchemaNode | dict[str, Any],
     ) -> SchemaNode:
-        """
-        Merge two schemas of the same type into a more permissive schema.
-
-        Args:
-            first_schema: First schema (SchemaNode or dict)
-            second_schema: Second schema (SchemaNode or dict)
-
-        Returns:
-            Merged schema node with relaxed constraints
-        """
         try:
             first_node = (
                 first_schema if isinstance(first_schema, SchemaNode) else SchemaNode(**first_schema)
             )
-        except Exception:
+        except Exception as e:
+            logger.warning("Failed to parse first schema node: %s", e)
             first_node = SchemaNode()
         try:
             second_node = (
@@ -88,7 +84,8 @@ class SchemaMerger:
                 if isinstance(second_schema, SchemaNode)
                 else SchemaNode(**second_schema)
             )
-        except Exception:
+        except Exception as e:
+            logger.warning("Failed to parse second schema node: %s", e)
             second_node = SchemaNode()
         first_type = first_node.type
         second_type = second_node.type
@@ -127,33 +124,45 @@ class SchemaMerger:
         first_pattern = first_schema.pattern
         second_pattern = second_schema.pattern
 
-        if first_pattern == second_pattern and first_pattern:
+        if first_pattern and second_pattern:
+            if first_pattern == second_pattern:
+                merged_schema.pattern = first_pattern
+            else:
+                return SchemaNode(
+                    anyOf=[
+                        SchemaNode(
+                            type=SchemaType.STRING,
+                            minLength=0,
+                            maxLength=first_schema.maxLength or 0,
+                            pattern=first_pattern,
+                        ),
+                        SchemaNode(
+                            type=SchemaType.STRING,
+                            minLength=0,
+                            maxLength=second_schema.maxLength or 0,
+                            pattern=second_pattern,
+                        ),
+                    ]
+                )
+        elif first_pattern:
             merged_schema.pattern = first_pattern
+        elif second_pattern:
+            merged_schema.pattern = second_pattern
 
         return merged_schema
 
     def _merge_integer(self, first_schema: SchemaNode, second_schema: SchemaNode) -> SchemaNode:
-        first_minimum = first_schema.minimum if first_schema.minimum is not None else 0
-        second_minimum = second_schema.minimum if second_schema.minimum is not None else 0
-        first_maximum = first_schema.maximum if first_schema.maximum is not None else 0
-        second_maximum = second_schema.maximum if second_schema.maximum is not None else 0
-
         return SchemaNode(
             type=SchemaType.INTEGER,
-            minimum=min(first_minimum, second_minimum),
-            maximum=max(first_maximum, second_maximum),
+            minimum=self._merge_min(first_schema.minimum, second_schema.minimum),
+            maximum=self._merge_max(first_schema.maximum, second_schema.maximum),
         )
 
     def _merge_number(self, first_schema: SchemaNode, second_schema: SchemaNode) -> SchemaNode:
-        first_minimum = first_schema.minimum if first_schema.minimum is not None else 0
-        second_minimum = second_schema.minimum if second_schema.minimum is not None else 0
-        first_maximum = first_schema.maximum if first_schema.maximum is not None else 0
-        second_maximum = second_schema.maximum if second_schema.maximum is not None else 0
-
         return SchemaNode(
             type=SchemaType.NUMBER,
-            minimum=min(first_minimum, second_minimum),
-            maximum=max(first_maximum, second_maximum),
+            minimum=self._merge_min(first_schema.minimum, second_schema.minimum),
+            maximum=self._merge_max(first_schema.maximum, second_schema.maximum),
         )
 
     def _merge_object(self, first_schema: SchemaNode, second_schema: SchemaNode) -> SchemaNode:
@@ -192,8 +201,6 @@ class SchemaMerger:
     def _merge_array(self, first_schema: SchemaNode, second_schema: SchemaNode) -> SchemaNode:
         first_items = first_schema.items
         second_items = second_schema.items
-        first_max_items = first_schema.maxItems or 0
-        second_max_items = second_schema.maxItems or 0
         first_items_node = (
             first_items
             if isinstance(first_items, SchemaNode)
@@ -208,6 +215,6 @@ class SchemaMerger:
         return SchemaNode(
             type=SchemaType.ARRAY,
             items=self.merge(first_items_node, second_items_node),
-            minItems=0,
-            maxItems=max(first_max_items, second_max_items),
+            minItems=self._merge_min(first_schema.minItems, second_schema.minItems),
+            maxItems=self._merge_max(first_schema.maxItems, second_schema.maxItems),
         )

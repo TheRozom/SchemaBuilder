@@ -129,25 +129,6 @@ class ScoringError(SchemaBuilderError):
         return result
 
 
-class AIServiceError(SchemaBuilderError):
-    def __init__(
-        self,
-        message: str,
-        operation: str | None = None,
-        details: dict[str, Any] | None = None,
-    ) -> None:
-        self.operation = operation
-        super().__init__(message, details)
-
-    def to_dict(self) -> dict[str, Any]:
-        result = super().to_dict()
-
-        if self.operation:
-            result["operation"] = self.operation
-
-        return result
-
-
 class InputValidationError(SchemaBuilderError):
     def __init__(
         self,

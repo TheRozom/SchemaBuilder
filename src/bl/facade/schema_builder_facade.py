@@ -3,8 +3,7 @@ from typing import Any
 from src.bl.scoring.engine.scoring_engine import ScoreResult, ScoringEngine
 from src.bl.validator import SchemaValidator
 from src.core import get_logger
-from src.core.config import settings
-from src.domain.interfaces import IAIService, ISchemaService
+from src.domain.interfaces import ISchemaService
 from src.domain.models import (
     ConflictAnalysis,
     SchemaDefinition,
@@ -15,26 +14,20 @@ logger = get_logger(__name__)
 
 
 class SchemaBuilderFacade:
-    def __init__(self, schema_service: ISchemaService, ai_service: IAIService | None = None):
+    def __init__(self, schema_service: ISchemaService):
         self.schema_service = schema_service
-        self.ai_service = ai_service
         self.scorer = ScoringEngine()
         self.validator = SchemaValidator()
 
-    async def build_schema_from_list(
-        self, data_list: list[Any], enable_ai: bool = None
-    ) -> SchemaDefinition:
-        if enable_ai is None:
-            enable_ai = settings.ENABLE_AI
-
-        logger.info("Building schema from %d items (AI: %s)", len(data_list), enable_ai)
+    async def build_schema_from_list(self, data_list: list[Any]) -> SchemaDefinition:
+        logger.info("Building schema from %d items", len(data_list))
 
         schema_def, analysis_result = await self.schema_service.generate_schema_from_list(data_list)
 
         if analysis_result:
             schema_def.analysis = ConflictAnalysis(**analysis_result.summary.model_dump())
 
-        schema_def = await self._enrich_schema(schema_def, data_list, enable_ai=enable_ai)
+        schema_def = self._enrich_schema(schema_def, data_list)
 
         logger.info("Schema built with score %d", schema_def.score.overall)
 
@@ -48,29 +41,16 @@ class SchemaBuilderFacade:
 
         return schema_def
 
-    async def infer_and_score(self, data: Any, enable_ai: bool = None) -> SchemaDefinition:
-        if enable_ai is None:
-            enable_ai = settings.ENABLE_AI
-
-        logger.info("Inferring and scoring schema (AI: %s)", enable_ai)
+    def infer_and_score(self, data: Any) -> SchemaDefinition:
+        logger.info("Inferring and scoring schema")
 
         schema_def = self.schema_service.generate_schema(data)
-        schema_def = await self._enrich_schema(schema_def, [data], enable_ai=enable_ai)
+        schema_def = self._enrich_schema(schema_def, [data])
 
         return schema_def
 
-    async def _enrich_schema(
-        self, schema_def: SchemaDefinition, data: list[Any], enable_ai: bool = False
-    ) -> SchemaDefinition:
+    def _enrich_schema(self, schema_def: SchemaDefinition, data: list[Any]) -> SchemaDefinition:
         score_res = self.scorer.score(schema_def.schema_content)
-
-        if enable_ai and self.ai_service:
-            try:
-                score_res.ai_score = await self.ai_service.evaluate_schema(
-                    schema_def.schema_content
-                )
-            except Exception as e:
-                logger.warning("AI scoring failed: %s", e)
 
         schema_def.score = score_res
 

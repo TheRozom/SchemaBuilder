@@ -22,7 +22,6 @@ def get_facade() -> SchemaBuilderFacade:
     factory = get_factory()
     return SchemaBuilderFacade(
         schema_service=factory.create_schema_service(),
-        ai_service=factory.create_ai_service(),
     )
 
 
@@ -37,7 +36,7 @@ async def build_schema(body: BuildSchemaRequest, facade: SchemaBuilderFacade = D
 @parse_body()
 async def infer_schema_from_data(body, facade: SchemaBuilderFacade = Depends(get_facade)):
     logger.info("POST /schemas/infer")
-    return await facade.infer_and_score(body)
+    return facade.infer_and_score(body)
 
 
 @router.post("/score")

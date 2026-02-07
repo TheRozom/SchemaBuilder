@@ -23,25 +23,27 @@ class TestSchemaMergerStrings:
         assert result.pattern == pattern
         assert result.maxLength == 15
 
-    def test_merge_strings_with_different_patterns_drops_pattern(self):
+    def test_merge_strings_with_different_patterns_creates_anyof(self):
         merger = SchemaMerger()
         first = SchemaNode(type=SchemaType.STRING, maxLength=10, pattern=r"^[a-z]+$")
 
         second = SchemaNode(type=SchemaType.STRING, maxLength=15, pattern=r"^\d+$")
 
         result = merger.merge(first, second)
-        assert result.type == SchemaType.STRING
-        assert result.pattern is None
-        assert result.maxLength == 15
+        assert result.anyOf is not None
+        assert len(result.anyOf) == 2
+        patterns = {opt.pattern for opt in result.anyOf if isinstance(opt, SchemaNode)}
+        assert r"^[a-z]+$" in patterns
+        assert r"^\d+$" in patterns
 
-    def test_merge_strings_one_with_pattern_one_without_drops_pattern(self):
+    def test_merge_strings_one_with_pattern_one_without_keeps_pattern(self):
         merger = SchemaMerger()
         first = SchemaNode(type=SchemaType.STRING, maxLength=10, pattern=r"^[a-z]+$")
 
         second = SchemaNode(type=SchemaType.STRING, maxLength=15)
         result = merger.merge(first, second)
         assert result.type == SchemaType.STRING
-        assert result.pattern is None
+        assert result.pattern == r"^[a-z]+$"
 
 
 class TestSchemaMergerIntegers:
@@ -186,7 +188,6 @@ class TestSchemaMergerArrays:
         result = merger.merge(first, second)
         assert result.type == SchemaType.ARRAY
         assert result.maxItems == 10
-        assert result.minItems == 0
         items = result.items
         assert isinstance(items, SchemaNode)
         assert items.maxLength == 20
@@ -398,6 +399,73 @@ class TestSchemaMergerEdgeCases:
         result = merger.merge(first, second)
         assert result.anyOf is not None
         assert len(result.anyOf) == 4
+
+    def test_merge_integers_negative_only_range(self):
+        merger = SchemaMerger()
+        first = SchemaNode(type=SchemaType.INTEGER, minimum=-10, maximum=-1)
+        second = SchemaNode(type=SchemaType.INTEGER, minimum=-5, maximum=-2)
+        result = merger.merge(first, second)
+        assert result.minimum == -10
+        assert result.maximum == -1
+
+    def test_merge_integers_one_side_none_minimum(self):
+        merger = SchemaMerger()
+        first = SchemaNode(type=SchemaType.INTEGER, minimum=-5, maximum=10)
+        second = SchemaNode(type=SchemaType.INTEGER, maximum=20)
+        result = merger.merge(first, second)
+        assert result.minimum == -5
+        assert result.maximum == 20
+
+    def test_merge_integers_both_none_bounds(self):
+        merger = SchemaMerger()
+        first = SchemaNode(type=SchemaType.INTEGER)
+        second = SchemaNode(type=SchemaType.INTEGER)
+        result = merger.merge(first, second)
+        assert result.minimum is None
+        assert result.maximum is None
+
+    def test_merge_numbers_negative_only_range(self):
+        merger = SchemaMerger()
+        first = SchemaNode(type=SchemaType.NUMBER, minimum=-100.5, maximum=-1.0)
+        second = SchemaNode(type=SchemaType.NUMBER, minimum=-50.0, maximum=-0.5)
+        result = merger.merge(first, second)
+        assert result.minimum == -100.5
+        assert result.maximum == -0.5
+
+    def test_merge_arrays_with_explicit_minitems(self):
+        merger = SchemaMerger()
+        first = SchemaNode(
+            type=SchemaType.ARRAY,
+            items=SchemaNode(type=SchemaType.STRING),
+            minItems=2,
+            maxItems=10,
+        )
+        second = SchemaNode(
+            type=SchemaType.ARRAY,
+            items=SchemaNode(type=SchemaType.STRING),
+            minItems=5,
+            maxItems=20,
+        )
+        result = merger.merge(first, second)
+        assert result.minItems == 2
+        assert result.maxItems == 20
+
+    def test_merge_arrays_one_sided_none_minitems(self):
+        merger = SchemaMerger()
+        first = SchemaNode(
+            type=SchemaType.ARRAY,
+            items=SchemaNode(type=SchemaType.STRING),
+            minItems=3,
+            maxItems=10,
+        )
+        second = SchemaNode(
+            type=SchemaType.ARRAY,
+            items=SchemaNode(type=SchemaType.STRING),
+            maxItems=20,
+        )
+        result = merger.merge(first, second)
+        assert result.minItems == 3
+        assert result.maxItems == 20
 
     def test_merge_complex_nested_objects(self):
         merger = SchemaMerger()

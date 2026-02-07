@@ -11,7 +11,6 @@ logger = get_logger(__name__)
 
 class ScoreResult(BaseModel):
     total_score: float
-    ai_score: int | None = None
     breakdown: dict[str, float]
 
     @property
@@ -65,7 +64,6 @@ class ScoringEngine:
             return result
 
         except (ValueError, KeyError, RuntimeError) as e:
-            # Catch expected errors during scoring (missing keys, invalid values, etc.)
             logger.error("Scoring failed: %s", e)
             raise ScoringError(
                 message=f"Failed to score schema: {e}",

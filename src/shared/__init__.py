@@ -1,6 +1,5 @@
 from .enums import ConfidenceLevel, SchemaKeyword, SchemaType, TreeKeys
 from .exceptions import (
-    AIServiceError,
     AnalysisError,
     ConfigurationError,
     InputValidationError,
@@ -59,7 +58,6 @@ __all__ = [
     "AnalysisError",
     "SchemaInferenceError",
     "ScoringError",
-    "AIServiceError",
     "InputValidationError",
     "is_dict",
     "is_list",

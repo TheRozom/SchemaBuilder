@@ -53,6 +53,13 @@ class SecurityRule:
 
                     return False
 
+                if node.minimum and abs(node.minimum) > 10**max_int_digits:
+                    self.score_zero = True
+                    self._issue_found = f"Numeric minimum magnitude exceeds 10^{max_int_digits}"
+                    logger.warning("Security issue: %s", self._issue_found)
+
+                    return False
+
             return None
 
         tree_traversal.traverse_schema_node(schema, check_node)
