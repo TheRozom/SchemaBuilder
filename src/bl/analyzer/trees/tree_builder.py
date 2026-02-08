@@ -4,6 +4,7 @@ from src.core import get_logger
 from src.shared.utils import (
     get_type_name,
     is_dict,
+    is_list,
     is_list_of_dicts,
     tree_analysis,
     tree_operations,
@@ -30,6 +31,9 @@ class TreeBuilder:
 
             elif is_list_of_dicts(value):
                 tree[f"{key}[]"] = self._build_array_of_objects(value)
+
+            elif is_list(value) and len(value) == 0:
+                tree[f"{key}[]"] = {}
 
             else:
                 tree[key] = self._build_leaf_node()

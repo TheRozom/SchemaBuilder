@@ -266,8 +266,8 @@ class TestTreeBuilder:
     def test_build_tree_with_empty_array(self, builder: TreeBuilder):
         data = {"items": []}
         tree = builder.build(data)
-        assert "items" in tree
-        assert tree["items"] is None
+        assert "items[]" in tree
+        assert tree["items[]"] == {}
 
     def test_build_tree_with_primitive_array(self, builder: TreeBuilder):
         data = {"tags": ["a", "b", "c"]}
