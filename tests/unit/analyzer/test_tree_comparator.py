@@ -55,3 +55,23 @@ class TestKeySimlarity:
         tree_b = tree_builder.build({"name": "Bob", "age": 25, "email": "b@b.com"})
         similarity = comparator.key_similarity(tree_a, tree_b)
         assert similarity == 100.0
+
+    def test_top_level_overlap_scores_higher_than_nested_only(self, comparator, tree_builder):
+        base = tree_builder.build({
+            "name": "Alice",
+            "address": {"city": "NY", "zip": "10001"},
+        })
+
+        shares_top_level = tree_builder.build({
+            "name": "Bob",
+            "contacts": {"email": "b@b.com"},
+        })
+
+        shares_nested_only = tree_builder.build({
+            "location": {"city": "LA", "zip": "90001"},
+            "contacts": {"email": "c@c.com"},
+        })
+
+        sim_top = comparator.key_similarity(base, shares_top_level)
+        sim_nested = comparator.key_similarity(base, shares_nested_only)
+        assert sim_top > sim_nested

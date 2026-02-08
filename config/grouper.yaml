@@ -2,3 +2,4 @@ grouping:
   similarity_threshold: 60
   key_weight: 0.6
   ted_weight: 0.4
+  depth_decay: 0.5
