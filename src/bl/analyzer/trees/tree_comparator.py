@@ -1,6 +1,7 @@
 from typing import Any
 
 from src.core import get_logger
+from src.core.service_config import service_config
 from src.shared.utils import tree_analysis, tree_operations
 
 logger = get_logger(__name__)
@@ -17,3 +18,6 @@ class TreeComparator:
 
     def flatten(self, tree: dict[str, Any], prefix: str = "") -> list[str]:
         return tree_analysis.flatten(tree, prefix)
+
+    def ted_similarity(self, tree_a: dict[str, Any], tree_b: dict[str, Any]) -> float:
+        return service_config.ted_calculator.calculate_similarity(tree_a, tree_b)

@@ -116,8 +116,8 @@ class TestSchemaAnalyzerAnalyzeConflicts:
 
     def test_summary_should_split_schemas_true_when_multiple_groups(self, analyzer: SchemaAnalyzer):
         data = [
-            {"type": "user", "name": "Alice"},
-            {"type": "product", "price": 100},
+            {"user": {"name": "Alice", "email": "alice@test.com"}},
+            {"product": {"sku": "ABC", "price": 99.99}},
         ]
         result = analyzer.analyze_conflicts(data)
         assert result.unique_structures > 1

@@ -15,6 +15,12 @@ class ServiceConfig:
         return TreeComparator()
 
     @cached_property
+    def ted_calculator(self):
+        from src.bl.analyzer.trees import TedCalculator
+
+        return TedCalculator()
+
+    @cached_property
     def grouper(self):
         from src.bl.analyzer.groupers import Grouper
 
@@ -76,6 +82,7 @@ class ServiceConfig:
         for attr in [
             "tree_builder",
             "tree_comparator",
+            "ted_calculator",
             "grouper",
             "similarity_calculator",
             "summary_generator",

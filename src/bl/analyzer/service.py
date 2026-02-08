@@ -34,7 +34,7 @@ class SchemaAnalyzer:
         try:
             self._build_tree_structures(data_list)
 
-            groups = self.grouper.group_by_containment(self.json_structures)
+            groups = self.grouper.group_by_similarity(self.json_structures)
             logger.debug("Grouped into %d distinct structure groups", len(groups))
 
             similarity_matrix = self.similarity_calculator.calculate(self.json_structures)

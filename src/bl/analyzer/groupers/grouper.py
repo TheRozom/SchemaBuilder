@@ -1,14 +1,21 @@
 from typing import Any
 
+from src.core.config_loader import load_yaml_config
 from src.core.service_config import service_config
 from src.shared.models import GroupData, JsonStructure
+
+DEFAULT_SIMILARITY_THRESHOLD = 60
 
 
 class Grouper:
     def __init__(self) -> None:
         self.comparator = service_config.tree_comparator
+        config = load_yaml_config("grouper.yaml")
+        self.similarity_threshold = (
+            config.get("grouping", {}).get("similarity_threshold", DEFAULT_SIMILARITY_THRESHOLD)
+        )
 
-    def group_by_containment(self, json_structures: list[JsonStructure]) -> list[GroupData]:
+    def group_by_similarity(self, json_structures: list[JsonStructure]) -> list[GroupData]:
         groups: list[GroupData] = []
         used_indices = set()
 
@@ -48,7 +55,11 @@ class Grouper:
         return group
 
     def _are_structures_compatible(self, tree_a: dict[str, Any], tree_b: dict[str, Any]) -> bool:
-        return self.comparator.contains(tree_a, tree_b) or self.comparator.contains(tree_b, tree_a)
+        if self.comparator.contains(tree_a, tree_b) or self.comparator.contains(tree_b, tree_a):
+            return True
+
+        similarity = self.comparator.ted_similarity(tree_a, tree_b)
+        return similarity >= self.similarity_threshold
 
     def _merge_structure_into_group(
         self, group: GroupData, structure: JsonStructure, index: int
