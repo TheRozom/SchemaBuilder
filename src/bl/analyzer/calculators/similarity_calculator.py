@@ -31,34 +31,9 @@ class SimilarityCalculator:
     def _calculate_similarity(
         self, first_tree: dict[str, Any], second_tree: dict[str, Any]
     ) -> float:
-        first_keys = set(self.comparator.flatten(first_tree))
-        second_keys = set(self.comparator.flatten(second_tree))
-
-        if self._both_empty(first_keys, second_keys):
-            return 100.0
-
-        if self._one_empty(first_keys, second_keys):
-            return 0.0
-
-        if self._has_containment(first_tree, second_tree):
-            return 100.0
-
-        return self._calculate_partial_similarity(first_keys, second_keys)
-
-    def _both_empty(self, first_keys: set[str], second_keys: set[str]) -> bool:
-        return not first_keys and not second_keys
-
-    def _one_empty(self, first_keys: set[str], second_keys: set[str]) -> bool:
-        return not first_keys or not second_keys
-
-    def _has_containment(self, first_tree: dict[str, Any], second_tree: dict[str, Any]) -> bool:
-        return self.comparator.contains(first_tree, second_tree) or self.comparator.contains(
+        if self.comparator.contains(first_tree, second_tree) or self.comparator.contains(
             second_tree, first_tree
-        )
+        ):
+            return 100.0
 
-    def _calculate_partial_similarity(self, first_keys: set[str], second_keys: set[str]) -> float:
-        intersection_count = len(first_keys & second_keys)
-        smaller_key_count = min(len(first_keys), len(second_keys))
-        if smaller_key_count == 0:
-            return 0.0
-        return round((intersection_count / smaller_key_count) * 100, 2)
+        return self.comparator.key_similarity(first_tree, second_tree)

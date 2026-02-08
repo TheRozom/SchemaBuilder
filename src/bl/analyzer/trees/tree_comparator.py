@@ -19,5 +19,19 @@ class TreeComparator:
     def flatten(self, tree: dict[str, Any], prefix: str = "") -> list[str]:
         return tree_analysis.flatten(tree, prefix)
 
+    def key_similarity(self, tree_a: dict[str, Any], tree_b: dict[str, Any]) -> float:
+        keys_a = set(self.flatten(tree_a))
+        keys_b = set(self.flatten(tree_b))
+
+        if not keys_a and not keys_b:
+            return 100.0
+
+        if not keys_a or not keys_b:
+            return 0.0
+
+        intersection_count = len(keys_a & keys_b)
+        smaller_count = min(len(keys_a), len(keys_b))
+        return round((intersection_count / smaller_count) * 100, 2)
+
     def ted_similarity(self, tree_a: dict[str, Any], tree_b: dict[str, Any]) -> float:
         return service_config.ted_calculator.calculate_similarity(tree_a, tree_b)

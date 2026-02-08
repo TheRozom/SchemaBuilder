@@ -114,6 +114,27 @@ class TestGrouper:
         assert len(groups) == 1
         assert groups[0].indices == [0]
 
+    def test_nested_contacts_with_optional_fields_are_grouped(
+        self, grouper: Grouper, tree_builder: TreeBuilder
+    ):
+        data = [
+            {
+                "id": 1,
+                "name": "Alice",
+                "contacts": {"email": "alice@test.com", "phone": "555-1234"},
+            },
+            {
+                "id": 2,
+                "name": "Bob",
+                "contacts": {"email": "bob@test.com"},
+                "referralCode": "REF123",
+            },
+        ]
+        structures = self._build_structures(tree_builder, data)
+        groups = grouper.group_by_similarity(structures)
+        assert len(groups) == 1
+        assert sorted(groups[0].indices) == [0, 1]
+
     def test_empty_list_returns_no_groups(self, grouper: Grouper):
         groups = grouper.group_by_similarity([])
         assert groups == []
