@@ -204,6 +204,41 @@ class TestMockDataGenerator:
             assert isinstance(record["value"], int)
             assert 0 <= record["value"] <= 100
 
+    def test_generate_property_allof_merges_overlapping_object_property_constraints(
+        self, generator
+    ):
+        schema = {
+            "allOf": [
+                {
+                    "type": "object",
+                    "properties": {"score": {"type": "integer", "minimum": 10}},
+                },
+                {
+                    "type": "object",
+                    "properties": {"score": {"maximum": 20}},
+                },
+            ]
+        }
+        results = generator.generate_from_schema(schema, count=30)
+        for record in results:
+            assert 10 <= record["score"] <= 20
+
+    def test_generate_property_allof_intersects_enum_values(self, generator):
+        schema = {
+            "type": "object",
+            "properties": {
+                "status": {
+                    "allOf": [
+                        {"type": "string", "enum": ["active", "pending"]},
+                        {"enum": ["pending", "archived"]},
+                    ]
+                }
+            },
+        }
+        results = generator.generate_from_schema(schema, count=20)
+        for record in results:
+            assert record["status"] == "pending"
+
     def test_generate_anyof_randomness(self):
         gen = MockDataGenerator()
         schema = {
@@ -220,10 +255,21 @@ class TestMockDataGenerator:
             "type": "object",
             "properties": {"value": {"anyOf": [{"type": "string"}, {"type": "null"}]}},
         }
-        results = gen.generate_from_schema(schema, count=50)
+        results = gen.generate_from_schema(
+            schema, count=50, mode="strict_valid", null_probability=0.5
+        )
         has_none = any(r["value"] is None for r in results)
         has_str = any(isinstance(r["value"], str) for r in results)
         assert has_none and has_str
+
+    def test_generate_anyof_with_null_probability_zero_avoids_null(self):
+        gen = MockDataGenerator()
+        schema = {
+            "type": "object",
+            "properties": {"value": {"anyOf": [{"type": "string"}, {"type": "null"}]}},
+        }
+        results = gen.generate_from_schema(schema, count=30, null_probability=0.0)
+        assert all(isinstance(r["value"], str) for r in results)
 
     def test_generate_top_level_anyof(self):
         gen = MockDataGenerator()
@@ -243,6 +289,30 @@ class TestMockDataGenerator:
         has_name = any("name" in r for r in results)
         has_age = any("age" in r for r in results)
         assert has_name and has_age
+
+    def test_generate_top_level_anyof_prefers_richer_branch(self):
+        gen = MockDataGenerator()
+        schema = {
+            "anyOf": [
+                {"type": "object", "properties": {}},
+                {"type": "object", "properties": {"name": {"type": "string"}}},
+            ]
+        }
+        results = gen.generate_from_schema(schema, count=20)
+        assert all("name" in r for r in results)
+
+    def test_meaningful_mode_allows_null_only_schema(self):
+        gen = MockDataGenerator(seed=1)
+        schema = {
+            "type": "object",
+            "properties": {
+                "value": {"type": "null"},
+            },
+        }
+        result = gen.generate_from_schema(
+            schema, count=1, mode="meaningful", min_populated_fields=1
+        )
+        assert result == {"value": None}
 
     def test_generate_top_level_allof(self, generator):
         schema = {
@@ -426,12 +496,12 @@ class TestMockDataValidation:
         call_count = 0
         original_generate = generator._generate_single_record
 
-        def flaky_generate(schema):
+        def flaky_generate(schema, **kwargs):
             nonlocal call_count
             call_count += 1
             if call_count <= 2:
                 return {"name": 12345}
-            return original_generate(schema)
+            return original_generate(schema, **kwargs)
 
         schema = {
             "type": "object",

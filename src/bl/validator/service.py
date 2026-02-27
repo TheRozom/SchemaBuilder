@@ -7,6 +7,7 @@ from src.core import get_logger
 from src.core.service_config import service_config
 from src.shared.exceptions import ValidationError as ValidationException
 from src.shared.models import ValidationError, ValidationResult
+from src.shared.utils import strip_required_keywords
 
 logger = get_logger(__name__)
 
@@ -20,9 +21,10 @@ class SchemaValidator:
         self, schema: dict[str, Any], data_list: list[Any]
     ) -> ValidationResult:
         logger.info("Validating %d objects against schema", len(data_list))
+        sanitized_schema = strip_required_keywords(schema)
 
         try:
-            validator = Draft7Validator(schema)
+            validator = Draft7Validator(sanitized_schema)
 
         except SchemaError as e:
             logger.error("Invalid schema provided: %s", e)

@@ -3,6 +3,7 @@ from fastapi import APIRouter, Depends
 from src.api.models import (
     AnalyzeRequest,
     BuildSchemaRequest,
+    ReconcileRequest,
     ScoreSchemaRequest,
     ValidateRequest,
     parse_body,
@@ -11,7 +12,7 @@ from src.bl.analyzer import SchemaAnalyzer
 from src.bl.facade import SchemaBuilderFacade
 from src.core import get_logger
 from src.core.service_factory import get_factory
-from src.domain.models import ConflictAnalysis, SchemaDefinition
+from src.domain.models import ConflictAnalysis, ReconcileSchemaResponse, SchemaDefinition
 
 logger = get_logger(__name__)
 
@@ -79,3 +80,12 @@ def validate_data(body: ValidateRequest, facade: SchemaBuilderFacade = Depends(g
         "total_errors": validation_result.total_errors,
         "errors": errors,
     }
+
+
+@router.post("/reconcile", response_model=ReconcileSchemaResponse)
+@parse_body(ReconcileRequest)
+async def reconcile_schema(
+    body: ReconcileRequest, facade: SchemaBuilderFacade = Depends(get_facade)
+):
+    logger.info("POST /schemas/reconcile - %d items", len(body.data))
+    return await facade.reconcile_schema_with_data(body.json_schema, body.data)

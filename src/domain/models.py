@@ -33,3 +33,16 @@ class SchemaDefinition(BaseModel):
     analysis: ConflictAnalysis | None = Field(
         None, description="Structure analysis result (when built from multiple objects)"
     )
+
+
+class ReconcileSchemaResponse(BaseModel):
+    original_schema: dict[str, Any] = Field(..., description="Original input JSON Schema")
+    adjusted_schema: dict[str, Any] = Field(..., description="Schema adjusted to fit the data")
+    score_before: ScoreResult = Field(..., description="Schema quality score before adjustment")
+    score_after: ScoreResult = Field(..., description="Schema quality score after adjustment")
+    validation_before: ValidationResult = Field(
+        ..., description="Validation results before schema adjustment"
+    )
+    validation_after: ValidationResult = Field(
+        ..., description="Validation results after schema adjustment"
+    )

@@ -117,6 +117,70 @@ Analyze structural differences between JSON objects to determine if they should 
 }
 ```
 
+### POST /schemas/reconcile
+Adjust an existing schema so it fits provided data samples, using the same schema builder pipeline.
+
+**Request Body:**
+```json
+{
+  "schema": {
+    "type": "object",
+    "properties": {
+      "name": {"type": "string", "maxLength": 3}
+    },
+    "additionalProperties": false
+  },
+  "data": [
+    {"name": "Elizabeth", "age": 30},
+    {"name": "John", "age": 25}
+  ]
+}
+```
+
+**Response (example):**
+```json
+{
+  "original_schema": { "...": "..." },
+  "adjusted_schema": { "...": "..." },
+  "score_before": { "...": "..." },
+  "score_after": { "...": "..." },
+  "validation_before": {
+    "valid": false,
+    "total_errors": 2,
+    "errors": []
+  },
+  "validation_after": {
+    "valid": true,
+    "total_errors": 0,
+    "errors": []
+  }
+}
+```
+
+### POST /generator/mock-data
+Generate mock data from a JSON Schema.
+
+**Request Body:**
+```json
+{
+  "schema": {
+    "type": "object",
+    "properties": {
+      "value": {"anyOf": [{"type": "string"}, {"type": "null"}]}
+    }
+  },
+  "count": 10,
+  "mode": "meaningful",
+  "min_populated_fields": 1,
+  "null_probability": 0.1
+}
+```
+
+**Options:**
+- `mode`: `meaningful` (default) or `strict_valid`
+- `min_populated_fields`: minimum non-empty/non-null fields per object when possible
+- `null_probability`: chance to pick a `null` branch when schema allows both null and non-null
+
 ### GET /health
 Health check endpoint
 
@@ -127,10 +191,14 @@ Create a `.env` file:
 ```
 ENABLE_AI=false
 OPENAI_API_KEY=your-api-key-here
+CORS_ORIGINS=["http://localhost:3000"]
+CORS_ALLOW_CREDENTIALS=false
 ```
 
 - `ENABLE_AI` - Enable AI-powered features (default: false)
 - `OPENAI_API_KEY` - OpenAI API key (required if ENABLE_AI=true)
+- `CORS_ORIGINS` - Allowed cross-origin hosts as JSON array (default: `[]`)
+- `CORS_ALLOW_CREDENTIALS` - Allow credentialed CORS requests (default: `false`)
 
 ## Project Structure
 

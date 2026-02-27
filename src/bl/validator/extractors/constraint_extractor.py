@@ -36,7 +36,6 @@ class ConstraintExtractor:
         SchemaKeyword.UNIQUE_ITEMS,
         SchemaKeyword.MIN_PROPERTIES,
         SchemaKeyword.MAX_PROPERTIES,
-        SchemaKeyword.REQUIRED,
         SchemaKeyword.ADDITIONAL_PROPERTIES,
         SchemaKeyword.TYPE,
         SchemaKeyword.ANY_OF,

@@ -32,10 +32,6 @@ class CompositionStrategy(ValueGenerationStrategy):
             for key, value in sub.items():
                 if key == "properties":
                     merged.setdefault("properties", {}).update(value)
-                elif key == "required":
-                    existing = set(merged.get("required", []))
-                    existing.update(value)
-                    merged["required"] = list(existing)
                 else:
                     merged[key] = value
         return merged

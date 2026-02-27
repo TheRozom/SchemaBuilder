@@ -88,14 +88,11 @@ class TestValidateDataAgainstSchema:
         assert error.actual_type == "str"
         assert error.expected_type == "integer"
 
-    def test_missing_required_property_returns_error(self, validator, simple_schema):
+    def test_missing_required_property_is_ignored(self, validator, simple_schema):
         data = [{"name": "John"}]
         result = validator.validate_data_against_schema(simple_schema, data)
-        assert result.valid is False
-        assert result.total_errors == 1
-        error = result.errors[0]
-        assert error.validator == "required"
-        assert "age" in error.message
+        assert result.valid is True
+        assert result.total_errors == 0
 
     def test_value_exceeds_maximum_returns_error(self, validator, simple_schema):
         data = [{"name": "John", "age": 200}]
@@ -173,14 +170,11 @@ class TestValidateDataAgainstSchema:
         assert 1 in indices
         assert 3 in indices
 
-    def test_nested_object_validation_errors_have_correct_path(self, validator, nested_schema):
+    def test_nested_object_required_is_ignored(self, validator, nested_schema):
         data = [{"user": {"profile": {"lastName": "Doe"}}}]
         result = validator.validate_data_against_schema(nested_schema, data)
-        assert result.valid is False
-        assert result.total_errors == 1
-        error = result.errors[0]
-        assert "user" in error.path or "profile" in error.path
-        assert error.validator == "required"
+        assert result.valid is True
+        assert result.total_errors == 0
 
     def test_array_item_validation_errors_have_correct_path(self, validator, array_schema):
         data = [{"tags": ["valid", "", "also-valid"]}]

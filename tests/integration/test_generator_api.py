@@ -167,3 +167,38 @@ class TestGeneratorAPI:
             assert data["count"] == 10
             for record in data["data"]:
                 assert "name" in record or "age" in record
+
+    async def test_mock_data_with_null_probability_zero(self):
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            schema = {
+                "type": "object",
+                "properties": {
+                    "value": {"anyOf": [{"type": "string"}, {"type": "null"}]},
+                },
+            }
+            response = await client.post(
+                "/generator/mock-data",
+                json={"schema": schema, "count": 20, "null_probability": 0.0},
+            )
+            assert response.status_code == 200
+            data = response.json()
+            assert all(isinstance(record["value"], str) for record in data["data"])
+
+    async def test_mock_data_meaningful_mode_retries_then_fails_when_forced_null(self):
+        async with AsyncClient(transport=transport, base_url="http://test") as client:
+            schema = {
+                "type": "object",
+                "properties": {
+                    "value": {"anyOf": [{"type": "string"}, {"type": "null"}]},
+                },
+            }
+            response = await client.post(
+                "/generator/mock-data",
+                json={
+                    "schema": schema,
+                    "count": 1,
+                    "mode": "meaningful",
+                    "null_probability": 1.0,
+                },
+            )
+            assert response.status_code == 400

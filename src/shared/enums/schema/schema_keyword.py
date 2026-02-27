@@ -23,7 +23,6 @@ class SchemaKeyword(str, Enum):
     ONE_OF = "oneOf"
     ALL_OF = "allOf"
     NOT = "not"
-    REQUIRED = "required"
     ENUM = "enum"
     CONST = "const"
     FORMAT = "format"

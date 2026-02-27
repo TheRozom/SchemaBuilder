@@ -522,8 +522,8 @@ class TestValidateEndpoint:
         response = await client.post("/schemas/validate", json=payload)
         assert response.status_code == 200
         result = response.json()
-        assert result["valid"] is False
-        assert result["total_errors"] > 0
+        assert result["valid"] is True
+        assert result["total_errors"] == 0
 
     @pytest.mark.asyncio
     async def test_validate_array_items(self, client: AsyncClient):
@@ -542,6 +542,68 @@ class TestValidateEndpoint:
         result = response.json()
         assert result["valid"] is False
         assert result["total_errors"] > 0
+
+
+class TestReconcileEndpoint:
+    @pytest.mark.asyncio
+    async def test_reconcile_adjusts_schema_to_fit_data(self, client: AsyncClient):
+        payload = {
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string", "maxLength": 3},
+                },
+                "required": ["name"],
+                "additionalProperties": False,
+            },
+            "data": [
+                {"name": "Elizabeth", "age": 30},
+                {"name": "John", "age": 25},
+            ],
+        }
+
+        response = await client.post("/schemas/reconcile", json=payload)
+        assert response.status_code == 200
+
+        result = response.json()
+        assert "original_schema" in result
+        assert "adjusted_schema" in result
+        assert "validation_before" in result
+        assert "validation_after" in result
+        assert "score_before" in result
+        assert "score_after" in result
+
+        assert result["validation_before"]["valid"] is False
+        assert result["validation_after"]["valid"] is True
+
+        adjusted_props = result["adjusted_schema"]["properties"]
+        assert "age" in adjusted_props
+        assert adjusted_props["name"]["maxLength"] >= len("Elizabeth")
+
+    @pytest.mark.asyncio
+    async def test_reconcile_empty_data_returns_400_error(self, client: AsyncClient):
+        payload = {
+            "schema": {"type": "object", "properties": {"name": {"type": "string"}}},
+            "data": [],
+        }
+
+        response = await client.post("/schemas/reconcile", json=payload)
+        assert response.status_code == 400
+        result = response.json()
+        assert "error" in result
+        assert "message" in result
+
+    @pytest.mark.asyncio
+    async def test_reconcile_with_non_objects_returns_400_error(self, client: AsyncClient):
+        payload = {
+            "schema": {"type": "object", "properties": {"name": {"type": "string"}}},
+            "data": ["not-an-object"],
+        }
+
+        response = await client.post("/schemas/reconcile", json=payload)
+        assert response.status_code == 400
+        result = response.json()
+        assert "error" in result
 
 
 class TestErrorHandling:

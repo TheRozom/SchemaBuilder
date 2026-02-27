@@ -1,4 +1,5 @@
 from . import tree_analysis, tree_operations, tree_traversal
+from .schema_sanitizer import strip_required_keywords
 from .type_utils import (
     get_type_name,
     is_bool,
@@ -29,6 +30,7 @@ __all__ = [
     "is_list_of_dicts",
     "get_type_name",
     "safe_len",
+    "strip_required_keywords",
     "tree_analysis",
     "tree_operations",
     "tree_traversal",

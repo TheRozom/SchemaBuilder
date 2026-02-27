@@ -21,7 +21,13 @@ async def generate_mock_data(
 ):
     logger.info("POST /generator/mock-data - count=%d", body.count)
 
-    result = generator.generate_from_schema(body.json_schema, count=body.count)
+    result = generator.generate_from_schema(
+        body.json_schema,
+        count=body.count,
+        mode=body.mode,
+        min_populated_fields=body.min_populated_fields,
+        null_probability=body.null_probability,
+    )
     mock_data = [result] if isinstance(result, dict) else result
 
     logger.info("Generated %d mock records", len(mock_data))

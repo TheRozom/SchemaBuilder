@@ -1,8 +1,9 @@
 from typing import Any, Union
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from src.shared.enums import SchemaType
+from src.shared.utils import strip_required_keywords
 
 
 class SchemaNode(BaseModel):
@@ -23,7 +24,6 @@ class SchemaNode(BaseModel):
     uniqueItems: bool | None = None
     properties: dict[str, Union[dict[str, Any], "SchemaNode"]] = Field(default_factory=dict)
     additionalProperties: bool | None = None
-    required: list[str] = Field(default_factory=list)
     anyOf: list[Union[dict[str, Any], "SchemaNode"]] = Field(default_factory=list)
 
     oneOf: list[Union[dict[str, Any], "SchemaNode"]] = Field(default_factory=list)
@@ -35,6 +35,11 @@ class SchemaNode(BaseModel):
     default: Any | None = None
     enum: list[Any] | None = None
     const: Any | None = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def remove_required_keywords(cls, value: Any) -> Any:
+        return strip_required_keywords(value)
 
     def to_dict(self) -> dict[str, Any]:
         result = {}
