@@ -594,16 +594,19 @@ class TestReconcileEndpoint:
         assert "message" in result
 
     @pytest.mark.asyncio
-    async def test_reconcile_with_non_objects_returns_400_error(self, client: AsyncClient):
+    async def test_reconcile_with_non_objects_succeeds(self, client: AsyncClient):
         payload = {
-            "schema": {"type": "object", "properties": {"name": {"type": "string"}}},
-            "data": ["not-an-object"],
+            "schema": {"type": "string", "maxLength": 1},
+            "data": ["not-an-object", "ok"],
         }
 
         response = await client.post("/schemas/reconcile", json=payload)
-        assert response.status_code == 400
+        assert response.status_code == 200
         result = response.json()
-        assert "error" in result
+        assert result["validation_before"]["valid"] is False
+        assert result["validation_after"]["valid"] is True
+        assert result["adjusted_schema"]["type"] == "string"
+        assert result["adjusted_schema"]["maxLength"] >= len("not-an-object")
 
 
 class TestErrorHandling:

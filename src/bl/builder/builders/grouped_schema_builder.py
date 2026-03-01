@@ -28,6 +28,12 @@ class GroupedSchemaBuilder:
                 field="data_list",
             )
 
+        # Structure analysis requires object inputs; for mixed/primitive lists we
+        # can still infer and merge a valid schema directly.
+        if not all(isinstance(item, dict) for item in data_list):
+            schema = self._build_merged_schema(data_list)
+            return schema, None
+
         if not self.config["schema_building"]["auto_detect_groups"]:
             schema = self._build_merged_schema(data_list)
 
