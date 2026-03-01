@@ -79,6 +79,12 @@ class ReconcileRequest(SchemaFieldMixin):
     def validate_data(self) -> "ReconcileRequest":
         if not self.data:
             raise InputValidationError(message="Data list cannot be empty", field="data")
+        if not all(isinstance(item, dict) for item in self.data):
+            raise InputValidationError(
+                message="All items must be JSON objects (not arrays or primitives)",
+                field="data",
+                expected_type="object",
+            )
         return self
 
 
